@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using M8.Notificaciones.Api.Features.Documentos.Dtos;
+using M8.Notificaciones.Api.Features.Documentos.Services;
 
 namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 
@@ -9,28 +10,45 @@ namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 public class DocumentosController : ControllerBase
 {
     private readonly ILogger<DocumentosController> _logger;
+    private readonly IQrService _qrService;
 
-    public DocumentosController(ILogger<DocumentosController> logger)
+    public DocumentosController(ILogger<DocumentosController> logger, IQrService qrService)
     {
         _logger = logger;
+        _qrService = qrService;
     }
 
     /// <summary>
     /// Genera un código QR temporal y de un solo uso para verificar el inicio del viaje (RF-8.3)
     /// </summary>
     [HttpPost("qr/generar")]
-    public ActionResult<QrResponse> GenerarQr([FromBody] GenerarQrRequest request)
+    public async Task<ActionResult<QrResponse>> GenerarQr([FromBody] GenerarQrRequest request)
     {
         _logger.LogInformation("Generando token QR para Viaje {ViajeId}", request.ViajeId);
 
-        var respuesta = new QrResponse(
-            ViajeId: request.ViajeId,
-            TokenSeguro: Guid.NewGuid().ToString("N"),
-            QrBase64: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
-            ExpiraEn: DateTime.UtcNow.AddMinutes(request.ValidezMinutos)
-        );
-
+        var respuesta = await _qrService.GenerarAsync(request.ViajeId, request.ValidezMinutos);
         return Ok(respuesta);
+
+    }
+
+    /// <summary>
+    /// valida y consume un Qr solo una vez (RF.8.3)
+    /// </summary>
+
+    [HttpPost("qr/validar")]
+    [ProducesResponseType(typeof(ValidarQrResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status410Gone)]
+
+    public async Task<ActionResult<ValidarQrResponse>> ValidarQr([FromBody] ValidarQrRequest request)
+    {
+        var viajeId = await _qrService.ConsumirAsync(request.Token);
+
+        if (viajeId is null)
+        {
+            return StatusCode(StatusCodes.Status410Gone,
+                new{mensaje = "el QR no es valido"});
+        }
+        return Ok(new ValidarQrResponse(true, viajeId));
     }
 
     /// <summary>

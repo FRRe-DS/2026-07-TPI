@@ -25,3 +25,13 @@ public record ComprobanteResponse(
     string Moneda,
     string UrlDescargaPdf
 );
+
+public record ValidarQrRequest(
+    string Token
+);
+
+public record ValidarQrResponse(
+    bool Valido,
+    string ViajeId
+);
+

@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using StackExchange.Redis;
+using M8.Notificaciones.Api.Features.Documentos.Services;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +37,10 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
     opciones.AbortOnConnectFail = false;
     return ConnectionMultiplexer.Connect(opciones);
 });
+// registrar el servicio del Qr
+builder.Services.AddSingleton<IQrService, QrService>();
+
+
 var app = builder.Build(); // <--- Esta es la línea que faltaba
 
 // Aplicar migraciones automáticas al iniciar la aplicación (RNF-05)
