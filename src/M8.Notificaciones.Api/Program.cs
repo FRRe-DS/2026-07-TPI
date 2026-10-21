@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,13 @@ var connectionString = builder.Configuration.GetConnectionString("PostgresConnec
 builder.Services.AddDbContext<M8DbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+{
+    var cs = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
+    var opciones = ConfigurationOptions.Parse(cs);
+    opciones.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(opciones);
+});
 var app = builder.Build(); // <--- Esta es la línea que faltaba
 
 // Aplicar migraciones automáticas al iniciar la aplicación (RNF-05)
