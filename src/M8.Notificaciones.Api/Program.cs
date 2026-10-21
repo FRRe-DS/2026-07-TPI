@@ -27,6 +27,7 @@ var connectionString = builder.Configuration.GetConnectionString("PostgresConnec
 builder.Services.AddDbContext<M8DbContext>(options =>
     options.UseNpgsql(connectionString));
 
+//registrar el servicio de redis
 builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 {
     var cs = builder.Configuration["Redis:ConnectionString"] ?? "localhost:6379";
