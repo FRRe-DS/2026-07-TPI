@@ -12,11 +12,11 @@ public class QrService: IQrService
 
     public QrService(IConnectionMultiplexer redis)=> _redis = redis; // consttruct
 
-    public async Task<QrResponse> GenerarAsync(string viajeId, int validezMinutos)
+    public async Task<QrResponse> GenerarAsync(Guid viajeId, Guid clienteId, int validezSegundos)
     {
         //preprar la conexion, con math.clamp fuerzas que sea entre 1-30
         var db = _redis.GetDatabase();
-        var ttl = TimeSpan.FromMinutes(Math.Clamp(validezMinutos,1,30)); 
+        var ttl = TimeSpan.FromMinutes(Math.Clamp(validezSegundos,30,3600)); 
 
         // invalidar el anterior
 
@@ -32,13 +32,15 @@ public class QrService: IQrService
         var token = NuevoToken();
         var hash = Hash(token);
 
-        await db.StringSetAsync($"qr:token:{hash}", viajeId, ttl);
+        await db.StringSetAsync($"qr:token:{hash}", viajeId.ToString(), ttl);
         await db.StringSetAsync(viajeKey, hash, ttl);
 
         return new QrResponse(
+            QrId: Guid.NewGuid(),
             ViajeId: viajeId,
-            TokenSeguro: token,
-            QrBase64: "data:image/png;base64," + Convert.ToBase64String(GenerarPng(token)),
+            Estado: "VIGENTE",
+            Token: token,
+            ImagenPng: "data:image/png;base64," + Convert.ToBase64String(GenerarPng(token)),
             ExpiraEn: DateTime.UtcNow.Add(ttl));
     }
 

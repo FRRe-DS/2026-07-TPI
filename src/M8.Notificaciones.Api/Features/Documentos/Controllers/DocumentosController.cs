@@ -21,13 +21,13 @@ public class DocumentosController : ControllerBase
     /// <summary>
     /// Genera un código QR temporal y de un solo uso para verificar el inicio del viaje (RF-8.3)
     /// </summary>
-    [HttpPost("qr/generar")]
-    public async Task<ActionResult<QrResponse>> GenerarQr([FromBody] GenerarQrRequest request)
+    [HttpPost("~/api/v1/viajes/{viajeId}/qr")]
+    public async Task<ActionResult<QrResponse>> GenerarQr(Guid viajeId, [FromBody] GenerarQrRequest request)
     {
-        _logger.LogInformation("Generando token QR para Viaje {ViajeId}", request.ViajeId);
+        _logger.LogInformation("Generando token QR para Viaje {ViajeId}", viajeId);
 
-        var respuesta = await _qrService.GenerarAsync(request.ViajeId, request.ValidezMinutos);
-        return Ok(respuesta);
+        var respuesta = await _qrService.GenerarAsync(viajeId, request.ClienteId, request.ValidezSegundos);
+        return StatusCode(StatusCodes.Status201Created, respuesta);
 
     }
 

@@ -1,15 +1,17 @@
 namespace M8.Notificaciones.Api.Features.Documentos.Dtos;
+using System.ComponentModel.DataAnnotations;
 
-public record GenerarQrRequest(
-    string ViajeId,
-    string ClienteId,
-    int ValidezMinutos = 10
+public record GenerarQrRequest( // viajeid en el endpoint
+    Guid ClienteId,
+    [property: Range(30, 3600)] int ValidezSegundos = 600
 );
 
 public record QrResponse(
-    string ViajeId,
-    string TokenSeguro,
-    string QrBase64,
+    Guid QrId,
+    Guid ViajeId,
+    string Estado,
+    string Token,
+    string ImagenPng,
     DateTime ExpiraEn
 );
 
