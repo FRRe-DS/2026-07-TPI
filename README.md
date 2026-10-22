@@ -40,3 +40,39 @@ El módulo **M8 - Notificaciones, Documentos y Soporte** se encarga de:
 - Generación y validación de códigos QR temporales de un solo uso para inicio de viaje.
 - Generación y reenvío de comprobantes de pago en PDF.
 - Registro y gestión de tickets de soporte asociados a viajes o reservas.
+
+---
+
+## ▶️ Cómo levantar el módulo
+
+Requisitos: Docker y Docker Compose.
+
+1. Copiar las variables de entorno y completarlas (el archivo `.env` no se sube al repo, RNF-06):
+   ```bash
+   cp .env.example .env
+   ```
+   Completar al menos `POSTGRES_PASSWORD`, `RABBITMQ_USER` y `RABBITMQ_PASSWORD`.
+2. Levantar todo:
+   ```bash
+   docker compose up --build
+   ```
+3. Abrir Swagger en <http://localhost:8088> (M8 usa el puerto 8088, por la convención 8080 + número de módulo).
+
+Para correr la API fuera de Docker (`dotnet run`), definir la cadena de conexión por variable de entorno, con los mismos valores del `.env` y el puerto de Postgres publicado:
+
+```bash
+export ConnectionStrings__PostgresConnection="Host=localhost;Port=5433;Database=m8_soporte_db;Username=postgres;Password=<tu_password>"
+```
+
+## 🧪 Pruebas
+
+```bash
+dotnet test M8.Notificaciones.sln
+```
+
+Los tests corren también en cada push y pull request (GitHub Actions, `.github/workflows/ci.yml`).
+
+## 📄 Contrato de la API
+
+El contrato OpenAPI de M8 está en [`docs/m8-openapi.yaml`](docs/m8-openapi.yaml).
+
