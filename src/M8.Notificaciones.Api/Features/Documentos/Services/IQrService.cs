@@ -4,6 +4,6 @@ namespace M8.Notificaciones.Api.Features.Documentos.Services;
 
 public interface IQrService
 {
-    Task<QrResponse> GenerarAsync(string viajeId, int validezMinutos);
+    Task<QrResponse> GenerarAsync(Guid viajeId, Guid clienteId, int validezSegundos);
     Task<string?> ConsumirAsync(string token);
 }
