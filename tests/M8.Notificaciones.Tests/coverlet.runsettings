@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Configuración de cobertura (coverlet). Ver la sección "Cobertura" del README. -->
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Migraciones de EF Core y su ModelSnapshot: código generado por `dotnet ef`. -->
+          <Exclude>[M8.Notificaciones.Api]M8.Notificaciones.Api.Infrastructure.Persistence.Migrations.*</Exclude>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>

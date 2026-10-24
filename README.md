@@ -72,6 +72,26 @@ dotnet test M8.Notificaciones.sln
 
 Los tests corren también en cada push y pull request (GitHub Actions, `.github/workflows/ci.yml`).
 
+### Cobertura
+
+La cobertura se mide con [coverlet](https://github.com/coverlet-coverage/coverlet) (`coverlet.collector`) y el reporte se arma con [ReportGenerator](https://github.com/danielpalme/ReportGenerator), instalado como herramienta local del repo:
+
+```bash
+dotnet tool restore
+dotnet test M8.Notificaciones.sln --collect:"XPlat Code Coverage" --results-directory ./coverage
+dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report -reporttypes:"Html;TextSummary"
+```
+
+El resumen queda en `coverage/report/Summary.txt` y el detalle línea por línea en `coverage/report/index.html`.
+
+Para ver solo un módulo, filtrar por namespace al generar el reporte. Por ejemplo, Notificaciones:
+
+```bash
+dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report-notificaciones -reporttypes:"Html;TextSummary" -classfilters:"+M8.Notificaciones.Api.Features.Notificaciones.*"
+```
+
+**Qué se excluye y por qué:** las migraciones de EF Core y su `M8DbContextModelSnapshot` (namespace `M8.Notificaciones.Api.Infrastructure.Persistence.Migrations`). Las genera `dotnet ef migrations add` a partir del modelo y no tienen lógica propia, así que no tiene sentido escribirles tests. Si se cuentan, bajan el porcentaje total sin decir nada sobre la calidad del código del módulo. La exclusión está en `tests/M8.Notificaciones.Tests/coverlet.runsettings`, que el proyecto de tests carga solo (`RunSettingsFilePath`), así que aplica a cualquier `dotnet test --collect`.
+
 ## 📄 Contrato de la API
 
 El contrato OpenAPI de M8 está en [`docs/m8-openapi.yaml`](docs/m8-openapi.yaml).
