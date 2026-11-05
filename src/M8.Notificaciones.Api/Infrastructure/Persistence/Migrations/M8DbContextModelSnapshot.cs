@@ -28,13 +28,16 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ClienteId")
-                        .IsRequired()
+                    b.Property<Guid>("ClienteId")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("uuid");
 
                     b.Property<bool>("EnviadoPorEmail")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<DateTime>("FechaEmision")
                         .HasColumnType("timestamp with time zone");
@@ -48,13 +51,19 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
+                    b.Property<string>("Motivo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("PagoId")
+                        .HasColumnType("uuid");
+
                     b.Property<string>("RutaArchivoPdf")
                         .HasColumnType("text");
 
-                    b.Property<string>("ViajeId")
-                        .IsRequired()
+                    b.Property<Guid>("ViajeId")
                         .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

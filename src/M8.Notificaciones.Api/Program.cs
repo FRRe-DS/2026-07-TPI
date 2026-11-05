@@ -1,9 +1,11 @@
+using QuestPDF.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using StackExchange.Redis;
 using M8.Notificaciones.Api.Features.Documentos.Services;
 
+QuestPDF.Settings.License = LicenseType.Evaluation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +42,8 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 // registrar el servicio del Qr
 builder.Services.AddSingleton<IQrService, QrService>();
 
+//Registrar el servicio del pdf
+builder.Services.AddScoped<IComprobantePdfService, ComprobantePdfService>();
 
 var app = builder.Build(); // <--- Esta es la línea que faltaba
 

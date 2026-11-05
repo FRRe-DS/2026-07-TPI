@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using M8.Notificaciones.Api.Features.Documentos.Dtos;
 using M8.Notificaciones.Api.Features.Documentos.Services;
+using Microsoft.EntityFrameworkCore;
+using M8.Notificaciones.Api.Infrastructure.Persistence;
 
 namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 
@@ -11,11 +13,19 @@ public class DocumentosController : ControllerBase
 {
     private readonly ILogger<DocumentosController> _logger;
     private readonly IQrService _qrService;
+    private readonly M8DbContext _db;
+    private readonly IComprobantePdfService _pdfService;
 
-    public DocumentosController(ILogger<DocumentosController> logger, IQrService qrService)
+    public DocumentosController(
+        ILogger<DocumentosController> logger,
+        IQrService qrService,
+        M8DbContext db,
+        IComprobantePdfService pdfService)
     {
         _logger = logger;
         _qrService = qrService;
+        _db = db;
+        _pdfService = pdfService;
     }
 
     /// <summary>
@@ -54,14 +64,37 @@ public class DocumentosController : ControllerBase
     /// <summary>
     /// Descarga el comprobante PDF de un viaje finalizado (RF-8.4)
     /// </summary>
-    [HttpGet("comprobantes/{viajeId}/pdf")]
-    public IActionResult DescargarComprobantePdf(string viajeId)
+    [HttpGet("~/api/v1/comprobantes/{comprobanteId:guid}/pdf")]
+    public async Task<IActionResult> DescargarComprobantePdf(Guid comprobanteId)
     {
-        _logger.LogInformation("Solicitada descarga de comprobante para viaje {ViajeId}", viajeId);
+        _logger.LogInformation(
+            "Solicitada descarga del comprobante {ComprobanteId}",
+            comprobanteId);
 
-        // Retorno simulado mientras se implementa QuestPDF
-        var fakePdfBytes = System.Text.Encoding.UTF8.GetBytes($"%PDF-1.4 Mock Comprobante Viaje: {viajeId}");
-        return File(fakePdfBytes, "application/pdf", $"comprobante-{viajeId}.pdf");
+        var comprobante = await _db.Comprobantes
+            .SingleOrDefaultAsync(c => c.Id == comprobanteId);
+
+        if (comprobante is null)
+        {
+            return NotFound();
+        }
+
+        if (comprobante.Estado != "GENERADO")
+        {
+            return Conflict(new
+            {
+                type = "/errores/comprobante-no-generado",
+                title = "El comprobante todavía no está generado",
+                status = 409
+            });
+        }
+
+        var pdfBytes = _pdfService.Generar(comprobante);
+
+        return File(
+            pdfBytes,
+            "application/pdf",
+            $"comprobante-{comprobante.Id}.pdf");
     }
 
     /// <summary>
