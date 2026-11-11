@@ -155,3 +155,6 @@ obj/
 appsettings.Development.json
 appsettings.Local.json
 
+
+# Resultados de dotnet test (cobertura y logs)
+TestResults/
