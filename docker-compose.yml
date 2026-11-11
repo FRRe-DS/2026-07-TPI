@@ -16,6 +16,8 @@ services:
       - RabbitMQ__User=${RABBITMQ_USER:?Falta RABBITMQ_USER en .env}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD:?Falta RABBITMQ_PASSWORD en .env}
       - Redis__ConnectionString=redis:6379
+      # Retraso de la proyección CQRS (ms) entre el comando y la vista consultable. Ver docs/DECISIONES.md.
+      - Proyeccion__RetrasoMs=${Proyeccion__RetrasoMs:-3000}
     depends_on:
       # Espera a que Postgres acepte conexiones: si no, la API intenta migrar antes de tiempo.
       postgres:
