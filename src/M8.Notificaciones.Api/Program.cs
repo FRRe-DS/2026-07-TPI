@@ -3,6 +3,7 @@ using Microsoft.OpenApi.Models;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using StackExchange.Redis;
 using M8.Notificaciones.Api.Features.Documentos.Services;
+using M8.Notificaciones.Api.Features.Viajes;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -39,6 +40,9 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 });
 // registrar el servicio del Qr
 builder.Services.AddSingleton<IQrService, QrService>();
+
+// Viajes: CQRS + Event Sourcing (event store, handler, consultas y proyector en segundo plano).
+builder.Services.AddViajesCqrsEs(builder.Configuration);
 
 
 var app = builder.Build(); // <--- Esta es la línea que faltaba
