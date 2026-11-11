@@ -168,6 +168,111 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
 
                     b.ToTable("Tickets");
                 });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.EventStore.EventoAlmacenado", b =>
+                {
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("RegistradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ViajeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Seq");
+
+                    b.HasIndex("EventoId")
+                        .IsUnique();
+
+                    b.HasIndex("ViajeId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("EventosViaje", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionCheckpoint", b =>
+                {
+                    b.Property<string>("Nombre")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UltimaSeq")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Nombre");
+
+                    b.ToTable("ProyeccionCheckpoint", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.Proyecciones.ViajeHistorialItem", b =>
+                {
+                    b.Property<Guid>("ViajeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ConductorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("EstadoResultante")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Evento")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ProyectadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("RegistradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ViajeId", "Version");
+
+                    b.ToTable("ViajesHistorialVista", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

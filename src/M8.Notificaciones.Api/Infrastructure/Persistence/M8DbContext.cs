@@ -2,6 +2,9 @@ using Microsoft.EntityFrameworkCore;
 using M8.Notificaciones.Api.Features.Notificaciones.Entities;
 using M8.Notificaciones.Api.Features.Documentos.Entities;
 using M8.Notificaciones.Api.Features.Soporte.Entities;
+using M8.Notificaciones.Api.Features.Viajes;
+using M8.Notificaciones.Api.Features.Viajes.EventStore;
+using M8.Notificaciones.Api.Features.Viajes.Proyecciones;
 
 namespace M8.Notificaciones.Api.Infrastructure.Persistence;
 
@@ -14,6 +17,11 @@ public class M8DbContext : DbContext
     public DbSet<Notificacion> Notificaciones => Set<Notificacion>();
     public DbSet<Comprobante> Comprobantes => Set<Comprobante>();
     public DbSet<Ticket> Tickets => Set<Ticket>();
+
+    // Viajes (CQRS + Event Sourcing): escritura = EventosViaje; lectura = ViajesHistorialVista.
+    public DbSet<EventoAlmacenado> EventosViaje => Set<EventoAlmacenado>();
+    public DbSet<ViajeHistorialItem> ViajesHistorialVista => Set<ViajeHistorialItem>();
+    public DbSet<ProyeccionCheckpoint> ProyeccionCheckpoints => Set<ProyeccionCheckpoint>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -54,5 +62,8 @@ public class M8DbContext : DbContext
             entity.HasIndex(t => t.ViajeId);
             entity.HasIndex(t => t.Estado);
         });
+
+        // Viajes (CQRS + Event Sourcing): la configuración vive en la propia feature.
+        ViajesModelo.Configurar(modelBuilder);
     }
 }
