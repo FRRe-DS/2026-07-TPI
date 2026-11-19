@@ -1,0 +1,187 @@
+# Salida real de la medición de cobertura - 2026-11-11 09:42:24 (hora local)
+# Rama feature/cqrs-es @ a5cae55. Sin M8_TEST_POSTGRES (igual que la CI: las 2 pruebas de PostgreSQL se omiten y NO suman cobertura).
+# Exclusiones: las de tests/M8.Notificaciones.Tests/coverlet.runsettings (migraciones de EF Core).
+
+########## 1) dotnet tool restore
+Se restauró la herramienta "dotnet-reportgenerator-globaltool" (versión "5.4.1"). Comandos disponibles: reportgenerator
+Se restauró la herramienta "dotnet-ef" (versión "8.0.8"). Comandos disponibles: dotnet-ef
+
+Restauración realizada correctamente.
+
+########## 2) dotnet test M8.Notificaciones.sln --collect:"XPlat Code Coverage" --results-directory ./coverage
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+  M8.Notificaciones.Api -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Se han encontrado conflictos entre distintas versiones de "Microsoft.EntityFrameworkCore.Relational" que no se han podido resolver. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Existía un conflicto entre "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Se eligió "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" porque era principal y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" no lo era. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen de "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" [C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll]. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen o se han unificado para "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" []. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+  M8.Notificaciones.Tests -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll
+Serie de pruebas para D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll (.NETCoreApp,Version=v8.0)
+Versión 17.11.1 (x64) de VSTest
+
+Iniciando la ejecución de pruebas, espere...
+1 archivos de prueba en total coincidieron con el patrón especificado.
+[xUnit.net 00:00:00.29]     M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.Con_comandos_simultaneos_sobre_el_mismo_viaje_gana_uno_solo [SKIP]
+  Omitidas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.Con_comandos_simultaneos_sobre_el_mismo_viaje_gana_uno_solo [1 ms]
+[xUnit.net 00:00:00.32]     M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.El_indice_unico_de_EventoId_rechaza_un_duplicado_aunque_se_saltee_el_chequeo [SKIP]
+  Omitidas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.El_indice_unico_de_EventoId_rechaza_un_duplicado_aunque_se_saltee_el_chequeo [1 ms]
+
+Correctas! - Con error:     0, Superado:    81, Omitido:     2, Total:    83, Duración: 633 ms - M8.Notificaciones.Tests.dll (net8.0)
+
+Datos adjuntos:
+  D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\coverage\67c1c6a4-bcd6-493e-ba5e-864c19266a40\coverage.cobertura.xml
+
+########## 3) Reporte SOLO de Features/Viajes (CQRS + Event Sourcing)
+# dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report-viajes -reporttypes:"Html;TextSummary" -classfilters:"+M8.Notificaciones.Api.Features.Viajes.*"
+Summary
+  Generated on: 11/11/2026 - 09:42:30
+  Coverage date: 11/11/2026 - 09:42:29
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 41
+  Files: 24
+  Line coverage: 97.5%
+  Covered lines: 594
+  Uncovered lines: 15
+  Coverable lines: 609
+  Total lines: 1466
+  Branch coverage: 96% (123 of 128)
+  Covered branches: 123
+  Total branches: 128
+  Method coverage: 90.9% (141 of 155)
+  Covered methods: 141
+  Total methods: 155
+
+M8.Notificaciones.Api                                                                 97.5%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.EventoIdReutilizadoException        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.EventoNoSoportadoException          100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.RegistrarEventoViajeHandler         100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.SolicitudInvalidaException          100.0%
+  M8.Notificaciones.Api.Features.Viajes.Consultas.ConsultasEventStore                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Consultas.ConsultasHistorial                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.EventosController                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.LabProyeccionController          100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.Problemas                        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.ViajesEventStoreController       100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.ViajesHistorialController        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ConductorAsignado                    100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.EventoDeViaje                        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ReglaDeNegocioException              100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.Viaje                                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ViajeFinalizado                      100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ViajeSolicitado                      100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.DetalleEventoRequest                    100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EstadoProyeccionResponse                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EstadoViajeResponse                      85.7%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoDelFlujoResponse                   33.3%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoEntranteRequest                   100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoRegistradoResponse                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.FlujoEventosResponse                    100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.HistorialViajeResponse                   80.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.HitosViajeResponse                       50.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ItemHistorialResponse                    50.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ReconstruccionResponse                  100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ResumenHistorialResponse                100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.ConflictoDeConcurrenciaException  100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.EventoAlmacenado                  100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.EventStoreViajes                  100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.FechasUtc                         100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.SerializadorEventos               100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.OpcionesProyeccion              100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionCheckpoint            100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionHistorialViajes       100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyectorHistorialViajes         97.5%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ViajeHistorialItem              100.0%
+  M8.Notificaciones.Api.Features.Viajes.ViajesModelo                                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.ViajesServiceCollectionExtensions            100.0%
+
+########## 4) Reporte de TODA la solución (referencia)
+# dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report -reporttypes:"Html;TextSummary"
+Summary
+  Generated on: 11/11/2026 - 09:42:31
+  Coverage date: 11/11/2026 - 09:42:29
+  Parser: Cobertura
+  Assemblies: 1
+  Classes: 60
+  Files: 36
+  Line coverage: 81.4%
+  Covered lines: 781
+  Uncovered lines: 178
+  Coverable lines: 959
+  Total lines: 2105
+  Branch coverage: 88.1% (127 of 144)
+  Covered branches: 127
+  Total branches: 144
+  Method coverage: 75.2% (201 of 267)
+  Covered methods: 201
+  Total methods: 267
+
+M8.Notificaciones.Api                                                                  81.4%
+  M8.Notificaciones.Api.Features.Documentos.Controllers.DocumentosController            0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.ComprobanteResponse                    0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.GenerarQrRequest                       0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.QrResponse                             0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.ReenviarComprobanteRequest             0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.ValidarQrRequest                       0.0%
+  M8.Notificaciones.Api.Features.Documentos.Dtos.ValidarQrResponse                      0.0%
+  M8.Notificaciones.Api.Features.Documentos.Entities.Comprobante                        0.0%
+  M8.Notificaciones.Api.Features.Documentos.Services.QrService                          0.0%
+  M8.Notificaciones.Api.Features.Notificaciones.Controllers.NotificacionesController  100.0%
+  M8.Notificaciones.Api.Features.Notificaciones.Dtos.EnviarNotificacionRequest        100.0%
+  M8.Notificaciones.Api.Features.Notificaciones.Dtos.NotificacionDetalleResponse      100.0%
+  M8.Notificaciones.Api.Features.Notificaciones.Entities.Notificacion                 100.0%
+  M8.Notificaciones.Api.Features.Soporte.Controllers.SoporteController                100.0%
+  M8.Notificaciones.Api.Features.Soporte.Dtos.CrearTicketRequest                      100.0%
+  M8.Notificaciones.Api.Features.Soporte.Dtos.TicketResponse                           54.5%
+  M8.Notificaciones.Api.Features.Soporte.Entities.Ticket                               81.8%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.EventoIdReutilizadoException         100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.EventoNoSoportadoException           100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.RegistrarEventoViajeHandler          100.0%
+  M8.Notificaciones.Api.Features.Viajes.Comandos.SolicitudInvalidaException           100.0%
+  M8.Notificaciones.Api.Features.Viajes.Consultas.ConsultasEventStore                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Consultas.ConsultasHistorial                  100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.EventosController                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.LabProyeccionController           100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.Problemas                         100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.ViajesEventStoreController        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Controllers.ViajesHistorialController         100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ConductorAsignado                     100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.EventoDeViaje                         100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ReglaDeNegocioException               100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.Viaje                                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ViajeFinalizado                       100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dominio.ViajeSolicitado                       100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.DetalleEventoRequest                     100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EstadoProyeccionResponse                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EstadoViajeResponse                       85.7%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoDelFlujoResponse                    33.3%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoEntranteRequest                    100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.EventoRegistradoResponse                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.FlujoEventosResponse                     100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.HistorialViajeResponse                    80.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.HitosViajeResponse                        50.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ItemHistorialResponse                     50.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ReconstruccionResponse                   100.0%
+  M8.Notificaciones.Api.Features.Viajes.Dtos.ResumenHistorialResponse                 100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.ConflictoDeConcurrenciaException   100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.EventoAlmacenado                   100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.EventStoreViajes                   100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.FechasUtc                          100.0%
+  M8.Notificaciones.Api.Features.Viajes.EventStore.SerializadorEventos                100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.OpcionesProyeccion               100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionCheckpoint             100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionHistorialViajes        100.0%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyectorHistorialViajes          97.5%
+  M8.Notificaciones.Api.Features.Viajes.Proyecciones.ViajeHistorialItem               100.0%
+  M8.Notificaciones.Api.Features.Viajes.ViajesModelo                                  100.0%
+  M8.Notificaciones.Api.Features.Viajes.ViajesServiceCollectionExtensions             100.0%
+  M8.Notificaciones.Api.Infrastructure.Persistence.M8DbContext                         97.6%
+  Program                                                                               0.0%

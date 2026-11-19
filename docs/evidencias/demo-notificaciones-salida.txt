@@ -1,0 +1,134 @@
+﻿# Salida real de scripts\demo-notificaciones.ps1 - 2026-11-18 21:19:12 (hora local)
+# API local en :5099 (dotnet run) + Keycloak de la cátedra + RabbitMQ, Redis, PostgreSQL y Mailpit en Docker.
+
+==============================================================================
+PARTE 1 - SEGURIDAD: token de Keycloak (M1) y roles
+==============================================================================
+
+>> Sin token, POST /api/v1/eventos responde 401 (problem+json)
+HTTP 401
+{
+    "type":  "about:blank",
+    "title":  "No autenticado",
+    "status":  401,
+    "instance":  "/api/v1/eventos"
+}
+
+>> Token client_credentials de grupo-07 (rol 'notificaciones-be' -> SERVICIO; en desarrollo también OPERADOR)
+Token obtenido (963 caracteres).
+
+==============================================================================
+PARTE 2 - EVENTO POR HTTP: VIAJE_ASIGNADO
+==============================================================================
+HTTP 202  (X-Request-Id enviado: demo-tp2-001, se correlaciona en los logs)
+{
+    "eventoId":  "1ffed8a9-a285-42a5-84f7-bcac03bd43b5",
+    "recibidoEn":  "2026-11-19T00:19:12.435372+00:00"
+}
+
+>> El MISMO evento otra vez: 202 con la respuesta original, sin duplicar avisos
+HTTP 202 - recibidoEn igual al original: True
+
+==============================================================================
+PARTE 3 - EVENTO POR RABBITMQ: RESERVA_CONFIRMADA
+==============================================================================
+Publicado en 'e2e.movilidad.eventos' con clave reserva.confirmada. ¿Enrutado a alguna cola?: True
+
+==============================================================================
+PARTE 4 - ENVÍO ASÍNCRONO: PENDIENTE -> ENVIADA
+==============================================================================
+
+>> GET /api/v1/notificaciones?destinatarioId=<cliente>  (rol OPERADOR)
+
+tipoEvento         canal estado  intentos asunto                  
+----------         ----- ------  -------- ------                  
+RESERVA_CONFIRMADA EMAIL ENVIADA        1 Reserva confirmada      
+VIAJE_ASIGNADO     EMAIL ENVIADA        1 Tu viaje tiene conductor
+
+
+
+
+>> Conductor (canales SMS y PUSH, simulados)
+
+tipoEvento     canal estado  intentos
+----------     ----- ------  --------
+VIAJE_ASIGNADO SMS   ENVIADA        1
+
+
+
+
+>> Correos recibidos por Mailpit (http://localhost:8025)
+
+Para                     Subject                  Created                 
+----                     -------                  -------                 
+cliente.demo@ejemplo.com Reserva confirmada       2026-11-19T00:19:13.482Z
+cliente.demo@ejemplo.com Tu viaje tiene conductor 2026-11-19T00:19:13.422Z
+cliente.demo@ejemplo.com Reserva confirmada       2026-11-19T00:18:11.721Z
+cliente.demo@ejemplo.com Tu viaje tiene conductor 2026-11-19T00:18:11.665Z
+cliente.demo@ejemplo.com Reserva confirmada       2026-11-19T00:17:07.984Z
+
+
+
+
+==============================================================================
+PARTE 5 - REINTENTOS: 3 intentos con espera creciente, FALLIDA y reintento manual
+==============================================================================
+Notificación 5ddb3280-194f-4cb7-ad5b-7213d5b046f7. Esperas configuradas: 5 s y 30 s (en total ~35 s).
+  t=1s  estado=PENDIENTE  intentos=1     
+  t=2s  estado=PENDIENTE  intentos=1     
+  t=3s  estado=PENDIENTE  intentos=1     
+  t=4s  estado=PENDIENTE  intentos=1     
+  t=5s  estado=PENDIENTE  intentos=1     
+  t=6s  estado=PENDIENTE  intentos=2     
+  t=7s  estado=PENDIENTE  intentos=2     
+  t=8s  estado=PENDIENTE  intentos=2     
+  t=9s  estado=PENDIENTE  intentos=2     
+  t=10s  estado=PENDIENTE  intentos=2     
+  t=11s  estado=PENDIENTE  intentos=2     
+  t=12s  estado=PENDIENTE  intentos=2     
+  t=13s  estado=PENDIENTE  intentos=2     
+  t=14s  estado=PENDIENTE  intentos=2     
+  t=15s  estado=PENDIENTE  intentos=2     
+  t=16s  estado=PENDIENTE  intentos=2     
+  t=17s  estado=PENDIENTE  intentos=2     
+  t=18s  estado=PENDIENTE  intentos=2     
+  t=19s  estado=PENDIENTE  intentos=2     
+  t=20s  estado=PENDIENTE  intentos=2     
+  t=21s  estado=PENDIENTE  intentos=2     
+  t=22s  estado=PENDIENTE  intentos=2     
+  t=23s  estado=PENDIENTE  intentos=2     
+  t=24s  estado=PENDIENTE  intentos=2     
+  t=25s  estado=PENDIENTE  intentos=2     
+  t=26s  estado=PENDIENTE  intentos=2     
+  t=27s  estado=PENDIENTE  intentos=2     
+  t=28s  estado=PENDIENTE  intentos=2     
+  t=29s  estado=PENDIENTE  intentos=2     
+  t=30s  estado=PENDIENTE  intentos=2     
+  t=31s  estado=PENDIENTE  intentos=2     
+  t=32s  estado=PENDIENTE  intentos=2     
+  t=33s  estado=PENDIENTE  intentos=2     
+  t=34s  estado=PENDIENTE  intentos=2     
+  t=35s  estado=PENDIENTE  intentos=2     
+  t=36s  estado=FALLIDA  intentos=3     
+
+
+>> Historial de intentos (no se borra ni se modifica)
+
+numero canal resultado error                                               realizadoEn                     
+------ ----- --------- -----                                               -----------                     
+     1 EMAIL ERROR     Destinatario rechazado por el proveedor (simulado). 2026-11-19T00:19:16.519243+00:00
+     2 EMAIL ERROR     Destinatario rechazado por el proveedor (simulado). 2026-11-19T00:19:21.572283+00:00
+     3 EMAIL ERROR     Destinatario rechazado por el proveedor (simulado). 2026-11-19T00:19:51.898507+00:00
+
+
+
+
+>> El OPERADOR la reintenta (Idempotency-Key obligatoria)
+HTTP 202 estado=PENDIENTE
+Misma clave otra vez: HTTP 202 (respuesta original, no agrega otro intento)
+Después del reintento: estado=FALLIDA intentos=4 (el proveedor sigue rechazando ese email)
+Reintentar una ENVIADA: HTTP 409 /errores/notificacion-no-reintentable
+
+==============================================================================
+FIN
+==============================================================================

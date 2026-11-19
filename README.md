@@ -26,7 +26,9 @@
 
 - **Lenguaje Principal:** C# (.NET 8)
 - **Framework Backend:** ASP.NET Core Web API
-- **Documentación de API:** OpenAPI 3.0 / Swagger
+- **Documentación de API:** OpenAPI 3.1 / Swagger
+- **Seguridad:** JWT (OAuth 2.0 / OpenID Connect) emitido por Keycloak
+- **Caché y estado efímero:** Redis
 - **Contenedores:** Docker / Docker Compose
 - **Mensajería Asíncrona:** RabbitMQ
 - **Base de Datos / Persistencia:** PostgreSQL
@@ -57,6 +59,7 @@ Requisitos: Docker y Docker Compose.
    docker compose up --build
    ```
 3. Abrir Swagger en <http://localhost:8088> (M8 usa el puerto 8088, por la convención 8080 + número de módulo).
+   Los endpoints de Notificaciones y Eventos exigen token (ver [TP2 - Notificaciones](#-tp2---notificaciones)).
 
 Para correr la API fuera de Docker (`dotnet run`), definir la cadena de conexión por variable de entorno, con los mismos valores del `.env` y el puerto de Postgres publicado:
 
@@ -72,7 +75,125 @@ dotnet test M8.Notificaciones.sln
 
 Los tests corren también en cada push y pull request (GitHub Actions, `.github/workflows/ci.yml`).
 
+### Cobertura
+
+La cobertura se mide con [coverlet](https://github.com/coverlet-coverage/coverlet) (`coverlet.collector`) y el reporte se arma con [ReportGenerator](https://github.com/danielpalme/ReportGenerator), instalado como herramienta local del repo:
+
+```bash
+dotnet tool restore
+dotnet test M8.Notificaciones.sln --collect:"XPlat Code Coverage" --results-directory ./coverage
+dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report -reporttypes:"Html;TextSummary"
+```
+
+El resumen queda en `coverage/report/Summary.txt` y el detalle línea por línea en `coverage/report/index.html`.
+
+Para ver solo un módulo, filtrar por namespace al generar el reporte. Por ejemplo, Notificaciones:
+
+```bash
+dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report-notificaciones -reporttypes:"Html;TextSummary" -classfilters:"+M8.Notificaciones.Api.Features.Notificaciones.*"
+```
+
+**Qué se excluye y por qué:** las migraciones de EF Core y su `M8DbContextModelSnapshot` (namespace `M8.Notificaciones.Api.Infrastructure.Persistence.Migrations`). Las genera `dotnet ef migrations add` a partir del modelo y no tienen lógica propia, así que no tiene sentido escribirles tests. Si se cuentan, bajan el porcentaje total sin decir nada sobre la calidad del código del módulo. La exclusión está en `tests/M8.Notificaciones.Tests/coverlet.runsettings`, que el proyecto de tests carga solo (`RunSettingsFilePath`), así que aplica a cualquier `dotnet test --collect`.
+
+## 🔁 CQRS + Event Sourcing (demo)
+
+Demo de investigación del Grupo 7 (temas 21 *Event Sourcing* y 13 *CQRS*) sobre un único escenario: el **historial de viajes**. Los hitos que M5 y M6 informan por `POST /api/v1/eventos` (`VIAJE_SOLICITADO`, `VIAJE_ASIGNADO`, `VIAJE_FINALIZADO`) se guardan como **eventos inmutables** (Event Sourcing). Un proyector asíncrono arma una **vista de lectura** con un retraso visible (CQRS).
+
+- Código: `src/M8.Notificaciones.Api/Features/Viajes/` (`Dominio/`, `EventStore/`, `Comandos/`, `Consultas/`, `Proyecciones/`, `Controllers/`, `Dtos/`).
+- Decisiones y diferencias con el contrato: [`docs/DECISIONES.md`](docs/DECISIONES.md).
+- Guía para el coloquio: [`docs/GUIA_DE_EXPLICACION.md`](docs/GUIA_DE_EXPLICACION.md).
+- Salidas reales de la demo, los tests y la cobertura: [`docs/evidencias/`](docs/evidencias/).
+
+> **TP2:** `POST /api/v1/eventos` (el endpoint del contrato) ahora lo atiende Notificaciones y exige JWT con rol SERVICIO. El historial se sigue alimentando desde ahí (`ReaccionHistorialViajes`). La escritura de la demo, con sus `409` y `422` propios, pasó a `POST /api/v1/lab/viajes/eventos` (el script `demo-cqrs-es.ps1` ya usa esa ruta). Ver la sección [TP2 - Notificaciones](#-tp2---notificaciones).
+
+### Endpoints
+
+| Lado | Método y ruta | Qué hace |
+|------|---------------|----------|
+| Escritura (ES) | `POST /api/v1/lab/viajes/eventos` | Registra un hito como evento. `202`; mismo `eventoId` y mismo cuerpo → respuesta original; otro cuerpo → `422`; transición inválida o concurrencia → `409`. |
+| Lectura ES | `GET /api/v1/viajes/{viajeId}/estado` | Estado reconstruido reproduciendo los eventos. `404` si no hay eventos. |
+| Lectura ES | `GET /api/v1/viajes/{viajeId}/eventos` | Flujo crudo de eventos, en orden. |
+| Lectura CQRS | `GET /api/v1/viajes/{viajeId}/historial` | Lee solo la vista proyectada. `200` con `items: []` si todavía no se proyectó. |
+| Laboratorio | `GET /api/v1/lab/proyeccion/estado` | Eventos en el store, proyectados y pendientes. **Fuera del contrato.** |
+| Laboratorio | `POST /api/v1/lab/proyeccion/reconstruir` | Borra la vista y la rearma desde los eventos. **Fuera del contrato.** |
+
+Ejemplo de cuerpo (`detalle.conductorId` es una extensión nuestra y `destinatarios` es opcional; ver `docs/DECISIONES.md`):
+
+```json
+{ "eventoId": "0b8c...", "tipo": "VIAJE_ASIGNADO", "origen": "M5", "ocurridoEn": "2026-11-11T13:00:00Z",
+  "viajeId": "5f2a...", "detalle": { "conductorId": "9e41..." } }
+```
+
+### Instalación y ejecución
+
+1. Copiar `.env.example` a `.env` y completarlo, como en [Cómo levantar el módulo](#️-cómo-levantar-el-módulo). El retraso de la proyección se ajusta con `Proyeccion__RetrasoMs` (por defecto `3000`).
+2. Levantar todo. La migración `AgregarViajesEventSourcing` se aplica sola al arrancar:
+   ```powershell
+   docker compose up --build
+   ```
+3. En otra terminal de PowerShell (Windows PowerShell 5.1 o PowerShell 7), correr la demo:
+   ```powershell
+   .\scripts\demo-cqrs-es.ps1                      # pausa con Enter entre partes
+   .\scripts\demo-cqrs-es.ps1 -BaseUrl http://localhost:8088 -SinPausa
+   ```
+   Si la política de ejecución lo bloquea: `powershell -ExecutionPolicy Bypass -File .\scripts\demo-cqrs-es.ps1`.
+
+### Tests y cobertura de la feature
+
+```powershell
+dotnet test M8.Notificaciones.sln
+```
+
+Las dos pruebas de integración contra PostgreSQL real se **omiten** salvo que se defina `M8_TEST_POSTGRES`. Con el Postgres del compose levantado (usar los valores de tu `.env`):
+
+```powershell
+$env:M8_TEST_POSTGRES = "Host=localhost;Port=5433;Database=postgres;Username=postgres;Password=<tu_password>"
+dotnet test M8.Notificaciones.sln
+```
+
+Cada prueba crea una base temporal, aplica las migraciones y la borra al terminar.
+
+Cobertura solo de `Features/Viajes`, con las mismas herramientas de la sección [Cobertura](#cobertura):
+
+```powershell
+dotnet tool restore
+dotnet test M8.Notificaciones.sln --collect:"XPlat Code Coverage" --results-directory ./coverage
+dotnet reportgenerator -reports:"./coverage/**/coverage.cobertura.xml" -targetdir:./coverage/report-viajes -reporttypes:"Html;TextSummary" -classfilters:"+M8.Notificaciones.Api.Features.Viajes.*"
+```
+
+Para regenerar la migración se usa `dotnet-ef` como herramienta local (`dotnet tool restore` y después `dotnet dotnet-ef ...`).
+
+## 📨 TP2 - Notificaciones
+
+Explicación completa, paso a paso, en [`docs/TP2_NOTIFICACIONES.md`](docs/TP2_NOTIFICACIONES.md). Catálogo de eventos y topología de RabbitMQ en [`docs/CATALOGO_EVENTOS.md`](docs/CATALOGO_EVENTOS.md).
+
+| Método y ruta | Rol | Qué hace |
+|---|---|---|
+| `GET /health` | (sin token) | `200 {"estado":"ok"}` o `503` si la base no responde. |
+| `POST /api/v1/eventos` | SERVICIO | Recibe un hito (también llega por RabbitMQ). `202`; repetido → respuesta original; `eventoId` con otro cuerpo → `422`. |
+| `GET /api/v1/notificaciones` | OPERADOR, SERVICIO | Lista paginada con filtros. |
+| `POST /api/v1/notificaciones` | OPERADOR | Aviso manual. Exige `Idempotency-Key`. `202`. |
+| `GET /api/v1/notificaciones/{id}` | OPERADOR, SERVICIO | Estado de entrega. |
+| `GET /api/v1/notificaciones/{id}/intentos` | OPERADOR, SERVICIO | Historial de intentos. |
+| `POST /api/v1/notificaciones/{id}/reintentos` | OPERADOR | Reintenta una `FALLIDA` (si no, `409`). Exige `Idempotency-Key`. |
+
+Cómo probarlo:
+
+1. Levantar el Keycloak de la cátedra (repo `FRRe-DS/2026-TPI`, carpeta `keycloak`, `docker compose up -d`, puerto 8080).
+2. Completar `.env` (incluido `KEYCLOAK_CLIENT_SECRET` del client `grupo-07`) y `docker compose up --build`.
+3. `.\scripts\demo-notificaciones.ps1` (o `-SinPausa`). Los correos se ven en Mailpit: <http://localhost:8025>. RabbitMQ: <http://localhost:15672>.
+4. Para Swagger: `.\scripts\obtener-token.ps1` y pegar el token en **Authorize**.
+
+Pruebas de integración distribuida (corren en la CI con contenedores de servicio; localmente, con el compose levantado):
+
+```powershell
+$env:M8_TEST_POSTGRES = "Host=localhost;Port=5433;Database=postgres;Username=postgres;Password=<tu_password>"
+$env:M8_TEST_RABBITMQ = "amqp://<usuario>:<clave>@localhost:5672"
+$env:M8_TEST_REDIS    = "localhost:6379"
+dotnet test M8.Notificaciones.sln
+```
+
 ## 📄 Contrato de la API
 
-El contrato OpenAPI de M8 está en [`docs/m8-openapi.yaml`](docs/m8-openapi.yaml).
+El contrato OpenAPI de M8 está en [`docs/m8-openapi.yaml`](docs/m8-openapi.yaml) (idéntico al de `FRRe-DS/2026-TPI/contratos/m8_notificaciones/openapi.yml`).
 

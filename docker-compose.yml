@@ -10,20 +10,48 @@ services:
       - "${API_PORT:-8088}:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      # Logs estructurados en JSON, con RequestId y demás scopes (RNF-14).
+      - Logging__Console__FormatterName=json
+      - Logging__Console__FormatterOptions__TimestampFormat=yyyy-MM-ddTHH:mm:ss.fffZ
       - ConnectionStrings__PostgresConnection=Host=postgres;Port=5432;Database=${POSTGRES_DB:?Falta POSTGRES_DB en .env};Username=${POSTGRES_USER:?Falta POSTGRES_USER en .env};Password=${POSTGRES_PASSWORD:?Falta POSTGRES_PASSWORD en .env}
       - RabbitMQ__Host=rabbitmq
       - RabbitMQ__Port=5672
       - RabbitMQ__User=${RABBITMQ_USER:?Falta RABBITMQ_USER en .env}
       - RabbitMQ__Password=${RABBITMQ_PASSWORD:?Falta RABBITMQ_PASSWORD en .env}
       - Redis__ConnectionString=redis:6379
+      # Retraso de la proyección CQRS (ms) entre el comando y la vista consultable. Ver docs/DECISIONES.md.
+      - Proyeccion__RetrasoMs=${Proyeccion__RetrasoMs:-3000}
+      # Seguridad (TP2): tokens del Keycloak de la cátedra (repo 2026-TPI, carpeta keycloak),
+      # levantado aparte en el puerto 8080 de la máquina. El emisor (iss) dice "localhost",
+      # pero desde el contenedor Keycloak se alcanza por host.docker.internal.
+      - Auth__Emisor=${AUTH_EMISOR:-http://localhost:8080/realms/ds-2026-realm}
+      - Auth__MetadataAddress=${AUTH_METADATA:-http://host.docker.internal:8080/realms/ds-2026-realm/.well-known/openid-configuration}
+      # Solo para desarrollo local: el client grupo-07 también actúa como OPERADOR, porque el
+      # realm de la cátedra no tiene usuarios con ese rol. En producción el rol lo da M1.
+      - Auth__MapeoRoles__notificaciones-be__1=${AUTH_ROL_EXTRA_GRUPO07:-OPERADOR}
+      # Notificaciones (TP2): EMAIL real por SMTP hacia Mailpit (bandeja de prueba).
+      - Notificaciones__Smtp__Habilitado=true
+      - Notificaciones__Smtp__Host=mailpit
+      - Notificaciones__Smtp__Puerto=1025
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
-      # Espera a que Postgres acepte conexiones: si no, la API intenta migrar antes de tiempo.
+      # Espera a que cada dependencia esté lista; si no, la API intenta migrar o conectarse antes de tiempo.
       postgres:
         condition: service_healthy
       rabbitmq:
-        condition: service_started
+        condition: service_healthy
       redis:
+        condition: service_healthy
+      mailpit:
         condition: service_started
+    healthcheck:
+      # La imagen de ASP.NET no trae curl: se usa bash con /dev/tcp contra GET /health.
+      test: ["CMD-SHELL", "bash -c 'exec 3<>/dev/tcp/127.0.0.1/8080 && printf \"GET /health HTTP/1.0\\r\\n\\r\\n\" >&3 && grep -q \"200 OK\" <&3'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   postgres:
     image: postgres:16-alpine
@@ -55,15 +83,34 @@ services:
       - "15672:15672"   # Panel de control web (http://localhost:15672)
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
 
   redis:
     image: redis:7-alpine
     container_name: m8-redis
     restart: unless-stopped
     ports:
-      - "6379:6379"     # Cache para tokens temporales de QR
+      - "6379:6379"     # QR temporales y claves de idempotencia (con TTL)
     volumes:
       - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Bandeja de correo de prueba: recibe los EMAIL que manda M8 (no salen a Internet).
+  mailpit:
+    image: axllent/mailpit:v1.21
+    container_name: m8-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"     # Interfaz web: http://localhost:8025
+      - "1025:1025"     # SMTP
 
 volumes:
   postgres_data:

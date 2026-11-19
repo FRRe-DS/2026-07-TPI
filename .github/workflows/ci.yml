@@ -1,6 +1,8 @@
 name: CI
 
 # Compila y corre las pruebas en cada push y pull request (RNF-17).
+# TP2: las pruebas de integración distribuida (RNF-07) corren contra PostgreSQL,
+# RabbitMQ y Redis reales, levantados como contenedores de servicio.
 on:
   push:
   pull_request:
@@ -8,6 +10,43 @@ on:
 jobs:
   build-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: m8ci
+          POSTGRES_PASSWORD: m8ci
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U m8ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      rabbitmq:
+        image: rabbitmq:3.13-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: m8ci
+          RABBITMQ_DEFAULT_PASS: m8ci
+        ports:
+          - 5672:5672
+        options: >-
+          --health-cmd "rabbitmq-diagnostics -q ping"
+          --health-interval 10s --health-timeout 10s --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    env:
+      # Credenciales descartables, solo existen dentro del runner de la CI.
+      M8_TEST_POSTGRES: Host=localhost;Port=5432;Database=postgres;Username=m8ci;Password=m8ci
+      M8_TEST_RABBITMQ: amqp://m8ci:m8ci@localhost:5672
+      M8_TEST_REDIS: localhost:6379
+
     steps:
       - uses: actions/checkout@v4
 
@@ -21,5 +60,14 @@ jobs:
       - name: Compilar
         run: dotnet build M8.Notificaciones.sln --no-restore -c Release
 
-      - name: Pruebas
+      - name: Pruebas (unitarias, de API y de integración distribuida)
         run: dotnet test M8.Notificaciones.sln --no-build -c Release --verbosity normal
+
+  docker-image:
+    # La imagen OCI tiene que construir siempre (RNF-04).
+    runs-on: ubuntu-latest
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir la imagen de M8
+        run: docker build -t m8-notificaciones:${{ github.sha }} .
