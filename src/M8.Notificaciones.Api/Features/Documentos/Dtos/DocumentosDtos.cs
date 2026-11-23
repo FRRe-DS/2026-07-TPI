@@ -3,9 +3,8 @@ using System.ComponentModel.DataAnnotations;
 
 public record GenerarQrRequest( // viajeid en el endpoint
     Guid ClienteId,
-    [property: Range(30, 3600)] int ValidezSegundos = 600
+    [Range(30, 3600)] int ValidezSegundos = 600
 );
-
 public record QrResponse(
     Guid QrId,
     Guid ViajeId,
@@ -30,7 +29,7 @@ public record ComprobanteResponse(
 
 //añado el viajeId
 public record ValidacionQrNueva(
-    [property: Required, StringLength(256, MinimumLength = 1)] string Token,
+    [Required, StringLength(256, MinimumLength = 1)] string Token,
     Guid ViajeId
 );
 
