@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using M8.Notificaciones.Api.Features.Documentos.Dtos;
 using M8.Notificaciones.Api.Features.Documentos.Services;
+using M8.Notificaciones.Api.Features.Documentos.Errors;
 
 namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 
@@ -32,23 +33,47 @@ public class DocumentosController : ControllerBase
     }
 
     /// <summary>
-    /// valida y consume un Qr solo una vez (RF.8.3)
+    /// Valida y consume un QR de inicio de viaje, una sola vez (RF-8.3)
     /// </summary>
-
-    [HttpPost("qr/validar")]
-    [ProducesResponseType(typeof(ValidarQrResponse), StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status410Gone)]
-
-    public async Task<ActionResult<ValidarQrResponse>> ValidarQr([FromBody] ValidarQrRequest request)
+    [HttpPost("~/api/v1/qr/validaciones")]
+    [ProducesResponseType(typeof(ValidacionQr), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict, "application/problem+json")]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status422UnprocessableEntity, "application/problem+json")]
+    public async Task<IActionResult> ValidarQr([FromBody] ValidacionQrNueva request)
     {
-        var viajeId = await _qrService.ConsumirAsync(request.Token);
-
-        if (viajeId is null)
+        if (request.ViajeId == Guid.Empty)
         {
-            return StatusCode(StatusCodes.Status410Gone,
-                new{mensaje = "el QR no es valido"});
+            return Problemas.SolicitudInvalida("viajeId es obligatorio.");
         }
-        return Ok(new ValidarQrResponse(true, viajeId));
+
+        var resultado = await _qrService.ConsumirAsync(request.Token, request.ViajeId);
+
+        return resultado.Estado switch
+        {
+            EstadoValidacionQr.Exito => Ok(resultado.Datos),
+
+            EstadoValidacionQr.NoExiste =>
+                Problemas.NoEncontrado("El token del QR no existe."),
+
+            EstadoValidacionQr.YaUsado =>
+                Problemas.Crear(StatusCodes.Status409Conflict, "/errores/qr-usado",
+                    "El QR ya fue usado"),
+
+            EstadoValidacionQr.Reemplazado =>
+                Problemas.Crear(StatusCodes.Status409Conflict, "/errores/qr-reemplazado",
+                    "El QR fue reemplazado por uno más nuevo"),
+
+            EstadoValidacionQr.Expirado =>
+                Problemas.Crear(StatusCodes.Status422UnprocessableEntity, "/errores/qr-expirado",
+                    "El QR expiró"),
+
+            EstadoValidacionQr.ViajeNoCoincide =>
+                Problemas.Crear(StatusCodes.Status422UnprocessableEntity, "/errores/qr-viaje-no-coincide",
+                    "El QR no corresponde al viaje indicado"),
+
+            _ => throw new InvalidOperationException($"Estado de validación no manejado: {resultado.Estado}")
+        };
     }
 
     /// <summary>
