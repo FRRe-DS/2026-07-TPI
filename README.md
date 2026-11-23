@@ -41,7 +41,7 @@ El módulo **M8 - Notificaciones, Documentos y Soporte** se encarga de:
 - Consumo asíncrono de eventos de viaje (M5, M6, M7, M9) para envío de notificaciones (push, email, SMS).
 - Generación y validación de códigos QR temporales de un solo uso para inicio de viaje.
 - Generación y reenvío de comprobantes de pago en PDF.
-- Registro y gestión de tickets de soporte asociados a viajes o reservas.
+- Registro y gestión de tickets de soporte asociados a viajes, reservas o pagos (RF-8.7). La API protegida en `/api/v1/tickets` permite a clientes y conductores abrir un ticket con `Idempotency-Key`, consultar sus tickets y leer su historial. El operador puede filtrar todos los tickets, resolverlos, reabrirlos o cerrarlos. Ver las operaciones y los cuerpos en el [contrato de M8](docs/m8-openapi.yaml).
 
 ---
 

@@ -221,13 +221,13 @@ No toqué el código de Soporte ni de Documentos (son de otras células y hay tr
 
 ### Soporte (Célula 3)
 
-6. Rutas `/api/Soporte/tickets` en vez de `/api/v1/tickets`. El ticket recibe `UsuarioId` en el cuerpo (el contrato lo toma del `sub` del token), usa `Tipo` en lugar de `referencia {tipo, id}` y le faltan el `PATCH` de estado y el historial.
+6. Resuelto en Soporte. La API usa `/api/v1/tickets`, obtiene el titular del `sub` del JWT y recibe `referencia {tipo, id}`. Incluye listado, cambio de estado e historial.
 7. Los enums (`EstadoTicket`, `TipoIncidencia`) salen como **números** en el JSON. Se puede copiar el patrón `EnumContrato<T>` de `Features/Notificaciones/Dominio/Enums.cs`.
 
 ### Todo M8
 
 8. Ahora existen la autenticación y la autorización (sección 3), pero **solo están aplicadas** a Eventos y Notificaciones. Las otras células tienen que agregar `[Authorize(Roles = ...)]` en sus controladores según el contrato. Los endpoints de laboratorio de la demo ES siguen abiertos (lo dejé así para no romper el script de la demo).
-9. `X-Request-Id`, `problem+json`, `413`, `405` y `/health` ya aplican a todo M8 porque son middlewares comunes. Los `NotFound(new { mensaje = ... })` de Soporte siguen saliendo como JSON común: conviene cambiarlos por `ProblemasHttp.Generico(404, ...)`.
+9. `X-Request-Id`, `problem+json`, `413`, `405` y `/health` ya aplican a todo M8 porque son middlewares comunes. Soporte usa `ProblemasHttp.Generico` para sus respuestas 404.
 
 ---
 

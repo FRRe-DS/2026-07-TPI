@@ -263,11 +263,59 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                     b.ToTable("Notificaciones", (string)null);
                 });
 
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.CambioTicket", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CambiadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EstadoAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EstadoNuevo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Motivo")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TicketId", "Id");
+
+                    b.ToTable("HistorialTickets", (string)null);
+                });
+
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.Ticket", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CerradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClaveIdempotencia")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -277,44 +325,42 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("ReferenciaId")
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("FechaCierre")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("ReferenciaTipo")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Resolucion")
                         .HasColumnType("text");
 
-                    b.Property<string>("Tipo")
+                    b.Property<string>("Rol")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ViajeId")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Estado");
+                    b.HasIndex("CreadoEn");
 
-                    b.HasIndex("UsuarioId");
+                    b.HasIndex("ReferenciaTipo", "ReferenciaId");
 
-                    b.HasIndex("ViajeId");
+                    b.HasIndex("UsuarioId", "ClaveIdempotencia")
+                        .IsUnique()
+                        .HasDatabaseName("UX_TicketsSoporte_Usuario_Clave");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("TicketsSoporte", (string)null);
                 });
 
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.EventStore.EventoAlmacenado", b =>
@@ -428,6 +474,15 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .WithMany("HistorialIntentos")
                         .HasForeignKey("NotificacionId")
                         .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.CambioTicket", b =>
+                {
+                    b.HasOne("M8.Notificaciones.Api.Features.Soporte.Entities.Ticket", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 

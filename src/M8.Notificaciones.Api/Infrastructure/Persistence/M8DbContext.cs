@@ -48,17 +48,19 @@ public class M8DbContext : DbContext
             entity.HasIndex(c => c.ViajeId);
         });
 
-        // Tickets
         modelBuilder.Entity<Ticket>(entity =>
         {
-            entity.HasKey(t => t.Id);
-            entity.Property(t => t.UsuarioId).IsRequired().HasMaxLength(100);
-            entity.Property(t => t.Titulo).IsRequired().HasMaxLength(250);
-            entity.Property(t => t.Tipo).HasConversion<string>();
-            entity.Property(t => t.Estado).HasConversion<string>();
-            entity.HasIndex(t => t.UsuarioId);
-            entity.HasIndex(t => t.ViajeId);
-            entity.HasIndex(t => t.Estado);
+            entity.ToTable("TicketsSoporte");
+            entity.HasIndex(t => new { t.UsuarioId, t.ClaveIdempotencia }).IsUnique()
+                .HasDatabaseName("UX_TicketsSoporte_Usuario_Clave");
+            entity.HasIndex(t => new { t.ReferenciaTipo, t.ReferenciaId });
+            entity.HasIndex(t => t.CreadoEn);
+        });
+        modelBuilder.Entity<CambioTicket>(entity =>
+        {
+            entity.ToTable("HistorialTickets");
+            entity.HasOne<Ticket>().WithMany().HasForeignKey(c => c.TicketId);
+            entity.HasIndex(c => new { c.TicketId, c.Id });
         });
 
         // Viajes (CQRS + Event Sourcing): la configuración vive en la propia feature.
