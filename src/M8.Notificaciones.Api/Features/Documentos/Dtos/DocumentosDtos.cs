@@ -28,12 +28,29 @@ public record ComprobanteResponse(
     string UrlDescargaPdf
 );
 
-public record ValidarQrRequest(
-    string Token
+//añado el viajeId
+public record ValidacionQrNueva(
+    [property: Required, StringLength(256, MinimumLength = 1)] string Token,
+    Guid ViajeId
 );
 
-public record ValidarQrResponse(
-    bool Valido,
-    string ViajeId
+// respuesta 200
+public record ValidacionQr(
+    Guid QrId,
+    Guid ViajeId,
+    DateTime UsadoEn
 );
 
+public enum EstadoValidacionQr
+{
+    Exito,
+    NoExiste,
+    YaUsado,
+    Reemplazado,
+    Expirado,
+    ViajeNoCoincide
+}
+public record ResultadoValidacionQr(
+    EstadoValidacionQr Estado,
+    ValidacionQr? Datos = null
+);
