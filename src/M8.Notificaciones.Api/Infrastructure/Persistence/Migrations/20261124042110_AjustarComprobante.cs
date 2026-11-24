@@ -11,17 +11,33 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.RenameColumn(
+                name: "RutaArchivoPdf",
+                table: "Comprobantes",
+                newName: "UrlPdf");
+
+            migrationBuilder.RenameColumn(
+                name: "FechaEmision",
+                table: "Comprobantes",
+                newName: "CreadoEn");
+
             migrationBuilder.Sql("""
                 ALTER TABLE "Comprobantes"
                 ALTER COLUMN "ViajeId" TYPE uuid
                 USING "ViajeId"::uuid;
-            """);
+                """);
 
             migrationBuilder.Sql("""
                 ALTER TABLE "Comprobantes"
                 ALTER COLUMN "ClienteId" TYPE uuid
                 USING "ClienteId"::uuid;
-            """);
+                """);
+
+            migrationBuilder.AddColumn<DateTime>(
+                name: "EmitidoEn",
+                table: "Comprobantes",
+                type: "timestamp with time zone",
+                nullable: true);
 
             migrationBuilder.AddColumn<string>(
                 name: "Estado",
@@ -48,6 +64,10 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
+                name: "EmitidoEn",
+                table: "Comprobantes");
+
+            migrationBuilder.DropColumn(
                 name: "Estado",
                 table: "Comprobantes");
 
@@ -59,25 +79,27 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                 name: "PagoId",
                 table: "Comprobantes");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "ViajeId",
+            migrationBuilder.RenameColumn(
+                name: "UrlPdf",
                 table: "Comprobantes",
-                type: "character varying(100)",
-                maxLength: 100,
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldMaxLength: 100);
+                newName: "RutaArchivoPdf");
 
-            migrationBuilder.AlterColumn<string>(
-                name: "ClienteId",
+            migrationBuilder.RenameColumn(
+                name: "CreadoEn",
                 table: "Comprobantes",
-                type: "character varying(100)",
-                maxLength: 100,
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uuid",
-                oldMaxLength: 100);
+                newName: "FechaEmision");
+
+            migrationBuilder.Sql("""
+                ALTER TABLE "Comprobantes"
+                ALTER COLUMN "ViajeId" TYPE character varying(100)
+                USING "ViajeId"::character varying(100);
+                """);
+
+            migrationBuilder.Sql("""
+                ALTER TABLE "Comprobantes"
+                ALTER COLUMN "ClienteId" TYPE character varying(100)
+                USING "ClienteId"::character varying(100);
+                """);
         }
     }
 }
