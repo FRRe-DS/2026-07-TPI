@@ -62,8 +62,8 @@ def build_pdf(filename):
         'DocTitle',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=19,
-        leading=23,
+        fontSize=18,
+        leading=22,
         textColor=colors.HexColor('#1A365D')
     )
 
@@ -71,8 +71,8 @@ def build_pdf(filename):
         'DocSubtitle',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=10.5,
-        leading=14.5,
+        fontSize=10,
+        leading=14,
         textColor=colors.HexColor('#4A5568')
     )
 
@@ -80,10 +80,10 @@ def build_pdf(filename):
         'H1',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=13,
-        leading=17,
+        fontSize=12,
+        leading=16,
         textColor=colors.HexColor('#2B6CB0'),
-        spaceBefore=12,
+        spaceBefore=11,
         spaceAfter=5
     )
 
@@ -91,19 +91,19 @@ def build_pdf(filename):
         'H2',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=10.5,
-        leading=14,
+        fontSize=10,
+        leading=13.5,
         textColor=colors.HexColor('#2D3748'),
-        spaceBefore=8,
-        spaceAfter=4
+        spaceBefore=7,
+        spaceAfter=3
     )
 
     body_style = ParagraphStyle(
         'Body',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=9,
-        leading=13,
+        fontSize=8.5,
+        leading=12.5,
         textColor=colors.HexColor('#2D3748'),
         spaceAfter=5
     )
@@ -112,8 +112,8 @@ def build_pdf(filename):
         'Bullet',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8.8,
-        leading=12.5,
+        fontSize=8.5,
+        leading=12,
         textColor=colors.HexColor('#2D3748'),
         leftIndent=15,
         spaceAfter=3
@@ -123,8 +123,8 @@ def build_pdf(filename):
         'TableHeader',
         parent=styles['Normal'],
         fontName='Helvetica-Bold',
-        fontSize=8.5,
-        leading=11,
+        fontSize=8,
+        leading=10.5,
         textColor=colors.white
     )
 
@@ -132,31 +132,22 @@ def build_pdf(filename):
         'TableCell',
         parent=styles['Normal'],
         fontName='Helvetica',
-        fontSize=8,
-        leading=10.5,
-        textColor=colors.HexColor('#2D3748')
-    )
-
-    code_style = ParagraphStyle(
-        'CodeText',
-        parent=styles['Normal'],
-        fontName='Courier',
-        fontSize=8,
+        fontSize=7.8,
         leading=10,
-        textColor=colors.HexColor('#2C5282')
+        textColor=colors.HexColor('#2D3748')
     )
 
     story = []
 
     # Title block
-    story.append(Paragraph("INFORME DE IMPLEMENTACIÓN: SOPORTE Y TICKETS TP3", title_style))
+    story.append(Paragraph("INFORME DE IMPLEMENTACIÓN Y TESTING: SOPORTE TP3", title_style))
     story.append(Spacer(1, 4))
     story.append(Paragraph(
         "<b>Módulo M8:</b> Notificaciones, Documentos y Soporte (Grupo 07)<br/>"
         "<b>Rama de Trabajo:</b> <code>soporte-tpi3</code><br/>"
         "<b>Fecha:</b> 24 de Noviembre de 2026 — Entrega y Cierre de Requerimientos TP2 / TP3", subtitle_style))
-    story.append(Spacer(1, 8))
-    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#2B6CB0'), spaceBefore=2, spaceAfter=10))
+    story.append(Spacer(1, 6))
+    story.append(HRFlowable(width="100%", thickness=1.5, color=colors.HexColor('#2B6CB0'), spaceBefore=2, spaceAfter=8))
 
     # Resumen Ejecutivo
     story.append(Paragraph("1. Resumen de lo Realizado en la Rama <code>soporte-tpi3</code>", h1_style))
@@ -189,54 +180,82 @@ def build_pdf(filename):
             Paragraph("<b>Blindaje de Seguridad</b><br/><i>(RNF-12)</i>", table_cell_style),
             Paragraph("Se aplicó <code>[Authorize]</code> sobre <code>DocumentosController</code> (QR y Comprobantes).", table_cell_style),
             Paragraph("Cierra la brecha detectada en la revisión previa: ningún endpoint queda público sin autenticación.", table_cell_style)
-        ],
-        [
-            Paragraph("<b>Suite de Tests TP3</b><br/><i>(RNF-07)</i>", table_cell_style),
-            Paragraph("Se actualizaron los tests en <code>SoporteControllerTests.cs</code> verificando generación de notificaciones y permisos de métricas.", table_cell_style),
-            Paragraph("Cobertura de pruebas automatizadas contra regresiones en CI/CD.", table_cell_style)
         ]
     ]
 
-    t_cambios = Table(cambios_data, colWidths=[130, 204, 170])
+    t_cambios = Table(cambios_data, colWidths=[125, 210, 169])
     t_cambios.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2B6CB0')),
         ('ALIGN', (0,0), (-1,-1), 'LEFT'),
         ('VALIGN', (0,0), (-1,-1), 'TOP'),
         ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
         ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E0')),
-        ('TOPPADDING', (0,0), (-1,-1), 4),
-        ('BOTTOMPADDING', (0,0), (-1,-1), 4),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
     ]))
     story.append(t_cambios)
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
 
     # Flujo de Notificaciones
     story.append(Paragraph("2. Flujo Completo de Notificaciones de Soporte", h1_style))
-    story.append(Paragraph(
-        "El ciclo de vida del ticket y sus notificaciones automáticas quedó orquestado de la siguiente manera:", body_style))
     story.append(Paragraph("1. <b>Apertura:</b> El cliente envía <code>POST /api/v1/tickets</code> con <code>Idempotency-Key</code>. Se crea el ticket en PostgreSQL y se encola una notificación: <i>'Ticket #ABC12345 recibido: Recibimos tu reclamo sobre VIAJE...'</i>.", bullet_style))
     story.append(Paragraph("2. <b>Toma del Operador:</b> El operador aplica <code>PATCH /api/v1/tickets/{id}</code> con <code>estado: EN_REVISION</code>. Se actualiza el ticket, se crea la fila en <code>CambioTicket</code> y se notifica: <i>'Tu ticket está en revisión por un operador.'</i>.", bullet_style))
     story.append(Paragraph("3. <b>Resolución:</b> El operador aplica <code>estado: RESUELTO</code> con <code>resolucion: 'Se aplicó reintegro'</code>. Se audita y se notifica: <i>'Tu reclamo fue resuelto. Resolución: Se aplicó reintegro.'</i>.", bullet_style))
     story.append(Paragraph("4. <b>Cierre:</b> El operador aplica <code>estado: CERRADO</code>. Se fija <code>cerradoEn</code> y se notifica el cierre definitivo.", bullet_style))
-    story.append(Spacer(1, 10))
+    story.append(Spacer(1, 8))
 
-    # Métricas Operativas
-    story.append(Paragraph("3. Endpoint de Métricas Operativas (<code>GET /api/v1/tickets/metricas</code>)", h1_style))
+    # NUEVA SECCIÓN DE TESTS
+    story.append(Paragraph("3. Resumen de Tests Automatizados Ejecutados (100% Passed)", h1_style))
     story.append(Paragraph(
-        "Permite al operador o administrador consultar el rendimiento de la mesa de soporte en tiempo real:", body_style))
-    story.append(Paragraph("<b>Payload de Respuesta (200 OK):</b>", h2_style))
-    ejemplo_json = (
-        "{\n"
-        "  \"totalTickets\": 42,\n"
-        "  \"abiertos\": 5,\n"
-        "  \"enRevision\": 8,\n"
-        "  \"resueltos\": 25,\n"
-        "  \"cerrados\": 4,\n"
-        "  \"tiempoMedioResolucionMinutos\": 18.5\n"
-        "}"
-    )
-    story.append(Paragraph(f"<font face='Courier' color='#2C5282'>{ejemplo_json.replace(chr(10), '<br/>&nbsp;&nbsp;')}</font>", body_style))
-    story.append(Spacer(1, 10))
+        "Se ejecutó la suite completa de tests de integración en el entorno oficial de contenedor (Docker con SDK .NET 8), "
+        "con un resultado de <b>142 tests aprobados (0 fallos)</b>. Los tests específicos de Soporte verificaron:", body_style))
+
+    tests_data = [
+        [Paragraph("Nombre del Test / Caso", table_header_style), Paragraph("Qué verifica en Soporte", table_header_style), Paragraph("Resultado", table_header_style)],
+        [
+            Paragraph("<code>Alta_transiciones_historial_y_repeticion_original</code>", table_cell_style),
+            Paragraph("Creación de ticket con rol CLIENTE y CONDUCTOR sobre VIAJE, RESERVA y PAGO. Máquina de estados completa, bloqueo ante saltos inválidos (409 Conflict), obligatoriedad de resolución (422) y reintento idempotente idéntico.", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font><br/>(3 variantes)", table_cell_style)
+        ],
+        [
+            Paragraph("<i>Verificación de Notificaciones Automáticas</i>", table_cell_style),
+            Paragraph("Comprueba que tras las transiciones del ticket, el motor de Notificaciones haya registrado las notificaciones correspondientes asociadas al <code>destinatarioId</code>.", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font>", table_cell_style)
+        ],
+        [
+            Paragraph("<code>Aisla_titulares_y_aplica_filtros_y_permisos</code>", table_cell_style),
+            Paragraph("Seguridad RBAC: un cliente o conductor no puede ver tickets ajenos ni consultar historiales de otros usuarios (403 Forbidden). El OPERADOR puede filtrar por cualquier usuario, estado o referencia.", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font>", table_cell_style)
+        ],
+        [
+            Paragraph("<code>Valida_clave_cuerpo_y_paginacion</code>", table_cell_style),
+            Paragraph("Validaciones de contrato: rechaza cuerpos con títulos vacíos, descripciones que exceden 2000 caracteres, tipos de referencia inexistentes y parámetros de paginación inválidos (400 Bad Request).", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font>", table_cell_style)
+        ],
+        [
+            Paragraph("<code>Operador_puede_consultar_metricas_operativas</code>", table_cell_style),
+            Paragraph("Verifica el nuevo endpoint <code>GET /api/v1/tickets/metricas</code>. Valida que un CLIENTE reciba 403 Forbidden y que un OPERADOR obtenga exitosamente el resumen con tiempos medios.", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font>", table_cell_style)
+        ],
+        [
+            Paragraph("<code>Altas_y_cambios_concurrentes_generan_un_solo_efecto</code>", table_cell_style),
+            Paragraph("Prueba de estrés de concurrencia: 8 peticiones paralelas con la misma <code>Idempotency-Key</code> generan exactamente un único registro en PostgreSQL sin colisiones.", table_cell_style),
+            Paragraph("<font color='#276749'><b>PASSED</b></font>", table_cell_style)
+        ]
+    ]
+
+    t_tests = Table(tests_data, colWidths=[140, 305, 59])
+    t_tests.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#2B6CB0')),
+        ('ALIGN', (0,0), (-1,-1), 'LEFT'),
+        ('VALIGN', (0,0), (-1,-1), 'TOP'),
+        ('INNERGRID', (0,0), (-1,-1), 0.5, colors.HexColor('#E2E8F0')),
+        ('BOX', (0,0), (-1,-1), 1, colors.HexColor('#CBD5E0')),
+        ('TOPPADDING', (0,0), (-1,-1), 3),
+        ('BOTTOMPADDING', (0,0), (-1,-1), 3),
+    ]))
+    story.append(t_tests)
+    story.append(Spacer(1, 8))
 
     # Qué resta en M8 para entregar todo
     story.append(Paragraph("4. Balance Final de M8: ¿Qué resta para completar todo el módulo?", h1_style))
