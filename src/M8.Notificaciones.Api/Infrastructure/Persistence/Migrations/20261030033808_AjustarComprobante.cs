@@ -28,7 +28,7 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                 table: "Comprobantes",
                 type: "text",
                 nullable: false,
-                defaultValue: "");
+                defaultValue: "PENDIENTE");
 
             migrationBuilder.AddColumn<string>(
                 name: "Motivo",

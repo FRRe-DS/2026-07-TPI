@@ -21,6 +21,10 @@ public class ComprobantePdfService : IComprobantePdfService
                     .FontSize(22)
                     .Bold();
 
+                var fechaEmision = comprobante.EmitidoEn?.ToString("dd/MM/yyyy HH:mm")
+                ?? "Pendiente de emisión";
+
+
                 pagina.Content().Column(columna =>
                 {
                     columna.Spacing(10);
@@ -35,8 +39,7 @@ public class ComprobantePdfService : IComprobantePdfService
                     }
 
                     columna.Item().Text($"Motivo: {comprobante.Motivo}");
-                    columna.Item().Text(
-                        $"Fecha de emisión: {comprobante.FechaEmision:dd/MM/yyyy HH:mm}");
+                    columna.Item().Text($"Fecha de emisión: {fechaEmision}");
 
                     columna.Item()
                         .AlignRight()

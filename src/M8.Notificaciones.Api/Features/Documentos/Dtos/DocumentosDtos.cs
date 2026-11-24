@@ -19,13 +19,29 @@ public record ReenviarComprobanteRequest(
     string EmailDestino
 );
 
+public record ImporteResponse(
+    decimal Monto,
+    string Moneda
+);
+
 public record ComprobanteResponse(
-    string ComprobanteId,
-    string ViajeId,
-    DateTime FechaEmision,
-    decimal MontoTotal,
-    string Moneda,
-    string UrlDescargaPdf
+    Guid ComprobanteId,
+    Guid ViajeId,
+    Guid ClienteId,
+    Guid? PagoId,
+    string Motivo,
+    string Estado,
+    ImporteResponse Importe,
+    DateTime? EmitidoEn,
+    string? UrlPdf,
+    DateTime CreadoEn
+);
+
+public record PaginaComprobantesResponse(
+    IReadOnlyCollection<ComprobanteResponse> Items,
+    int Pagina,
+    int Tamano,
+    int Total
 );
 
 public record ValidarQrRequest(

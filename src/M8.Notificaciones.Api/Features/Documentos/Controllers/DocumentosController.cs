@@ -64,6 +64,8 @@ public class DocumentosController : ControllerBase
     /// <summary>
     /// Descarga el comprobante PDF de un viaje finalizado (RF-8.4)
     /// </summary>
+    
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     [HttpGet("~/api/v1/comprobantes/{comprobanteId:guid}/pdf")]
     public async Task<IActionResult> DescargarComprobantePdf(Guid comprobanteId)
     {
@@ -81,12 +83,16 @@ public class DocumentosController : ControllerBase
 
         if (comprobante.Estado != "GENERADO")
         {
-            return Conflict(new
+            var problema = new ProblemDetails
             {
-                type = "/errores/comprobante-no-generado",
-                title = "El comprobante todavía no está generado",
-                status = 409
-            });
+                Type = "/errores/comprobante-no-generado",
+                Title = "El comprobante todavía no está generado",
+                Detail = "El comprobante debe estar en estado GENERADO antes de descargarlo.",
+                Status = StatusCodes.Status409Conflict,
+                Instance = HttpContext.Request.Path
+            };
+
+            return Conflict(problema);
         }
 
         var pdfBytes = _pdfService.Generar(comprobante);
@@ -95,6 +101,73 @@ public class DocumentosController : ControllerBase
             pdfBytes,
             "application/pdf",
             $"comprobante-{comprobante.Id}.pdf");
+    }
+
+    [HttpGet("~/api/v1/comprobantes")]
+    public async Task<ActionResult<PaginaComprobantesResponse>> ListarComprobantes(
+        Guid? viajeId,
+        Guid? clienteId,
+        int pagina = 1,
+        int tamano = 20)
+    {
+        var consulta = _db.Comprobantes.AsQueryable();
+
+        if (viajeId.HasValue)
+            consulta = consulta.Where(c => c.ViajeId == viajeId.Value);
+
+        if (clienteId.HasValue)
+            consulta = consulta.Where(c => c.ClienteId == clienteId.Value);
+
+        var total = await consulta.CountAsync();
+
+        var comprobantes = await consulta
+            .OrderByDescending(c => c.CreadoEn)
+            .Skip((pagina - 1) * tamano)
+            .Take(tamano)
+            .ToListAsync();
+
+        var items = comprobantes.Select(c => new ComprobanteResponse(
+            c.Id,
+            c.ViajeId,
+            c.ClienteId,
+            c.PagoId,
+            c.Motivo,
+            c.Estado,
+            new ImporteResponse(c.MontoTotal, c.Moneda),
+            c.EmitidoEn,
+            c.UrlPdf,
+            c.CreadoEn));
+
+        return Ok(new PaginaComprobantesResponse(
+            items.ToList(),
+            pagina,
+            tamano,
+            total));
+    }
+
+    [HttpGet("~/api/v1/comprobantes/{comprobanteId:guid}")]
+    [ProducesResponseType(typeof(ComprobanteResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<ComprobanteResponse>> ObtenerComprobante(
+        Guid comprobanteId)
+    {
+        var c = await _db.Comprobantes
+            .SingleOrDefaultAsync(x => x.Id == comprobanteId);
+
+        if (c is null)
+            return NotFound();
+
+        return Ok(new ComprobanteResponse(
+            c.Id,
+            c.ViajeId,
+            c.ClienteId,
+            c.PagoId,
+            c.Motivo,
+            c.Estado,
+            new ImporteResponse(c.MontoTotal, c.Moneda),
+            c.EmitidoEn,
+            c.UrlPdf,
+            c.CreadoEn));
     }
 
     /// <summary>

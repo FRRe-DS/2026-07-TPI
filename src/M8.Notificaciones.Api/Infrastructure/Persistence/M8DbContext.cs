@@ -35,8 +35,11 @@ public class M8DbContext : DbContext
         modelBuilder.Entity<Comprobante>(entity =>
         {
             entity.HasKey(c => c.Id);
-            entity.Property(c => c.ViajeId).IsRequired().HasMaxLength(100);
-            entity.Property(c => c.ClienteId).IsRequired().HasMaxLength(100);
+            entity.Property(c => c.ViajeId).IsRequired();
+            entity.Property(c => c.ClienteId).IsRequired();
+            entity.Property(c => c.Estado)
+                .IsRequired()
+                .HasDefaultValue("PENDIENTE");
             entity.Property(c => c.MontoTotal).HasPrecision(18, 2);
             entity.Property(c => c.Moneda).HasMaxLength(10);
             entity.HasIndex(c => c.ViajeId);

@@ -5,7 +5,7 @@ using M8.Notificaciones.Api.Infrastructure.Persistence;
 using StackExchange.Redis;
 using M8.Notificaciones.Api.Features.Documentos.Services;
 
-QuestPDF.Settings.License = LicenseType.Evaluation;
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,6 +44,8 @@ builder.Services.AddSingleton<IQrService, QrService>();
 
 //Registrar el servicio del pdf
 builder.Services.AddScoped<IComprobantePdfService, ComprobantePdfService>();
+
+builder.Services.AddScoped<IComprobanteService, ComprobanteService>();
 
 var app = builder.Build(); // <--- Esta es la línea que faltaba
 
