@@ -1,0 +1,137 @@
+# Salida real de scripts/demo-cqrs-es.ps1
+# Fecha (local): 2026-11-11 09:41:17
+# Comando: powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "[Console]::OutputEncoding=[Text.Encoding]::UTF8; & .\scripts\demo-cqrs-es.ps1 -SinPausa"  (salida capturada a este archivo)
+# Shell: Windows PowerShell 5.1.26100.1591 - API en Docker (docker compose up --build), Proyeccion__RetrasoMs=3000
+# Contenedores: m8-notificaciones-api (Up 3 minutes), m8-postgres (Up 18 minutes (healthy)), m8-rabbitmq (Up 18 minutes), m8-redis (Up 18 minutes)
+
+
+==============================================================================
+  DEMO CQRS + EVENT SOURCING - M8 (Grupo 7) - historial de viajes
+==============================================================================
+API: http://localhost:8088
+API disponible. Retraso configurado de la proyección: 3000 ms
+
+==============================================================================
+  PARTE 1 - EVENT SOURCING: guardar eventos y reconstruir el estado
+==============================================================================
+viajeId    = 69990cde-9b7a-420d-9210-c323cb3dbf74
+conductorId = 02f72063-57a1-4715-8f15-f700fe505760
+
+>> Se envían los tres hitos a POST /api/v1/eventos (M5 solicita y asigna, M6 finaliza)
+  VIAJE_SOLICITADO -> 202, version 1
+  VIAJE_ASIGNADO   -> 202, version 2
+  VIAJE_FINALIZADO -> 202, version 3
+
+>> GET /api/v1/viajes/{id}/eventos  -> el flujo de eventos tal como se guardó (append-only)
+
+seq version tipo              origen
+--- ------- ----              ------
+ 17       1 ViajeSolicitado   M5    
+ 18       2 ConductorAsignado M5    
+ 19       3 ViajeFinalizado   M6    
+
+
+
+Payload del evento 2 (ConductorAsignado): solo IDs, ningún dato personal
+{
+    "conductorId":  "02f72063-57a1-4715-8f15-f700fe505760",
+    "viajeId":  "69990cde-9b7a-420d-9210-c323cb3dbf74",
+    "ocurridoEn":  "2026-11-11T12:41:18.229031+00:00"
+}
+
+>> GET /api/v1/viajes/{id}/estado   -> estado RECONSTRUIDO reproduciendo los eventos
+{
+    "viajeId":  "69990cde-9b7a-420d-9210-c323cb3dbf74",
+    "estado":  "FINALIZADO",
+    "conductorId":  "02f72063-57a1-4715-8f15-f700fe505760",
+    "version":  3,
+    "eventosReproducidos":  3,
+    "hitos":  {
+                  "solicitadoEn":  "2026-11-11T12:41:18.159965+00:00",
+                  "asignadoEn":  "2026-11-11T12:41:18.229031+00:00",
+                  "finalizadoEn":  "2026-11-11T12:41:18.279936+00:00"
+              }
+}
+
+>> Viaje nuevo: se solicita y se intenta FINALIZAR sin conductor asignado
+  Respuesta: HTTP 409 (application/problem+json)
+{"type":"/errores/transicion-de-viaje-invalida","title":"Transición de viaje inválida","status":409,"detail":"No se puede finalizar el viaje: el viaje c1ab1ab7-df54-4c5e-b3ac-b02c723a0986 está SOLICITADO y se requiere ASIGNADO.","instance":"/api/v1/eventos"}
+
+>> Idempotencia: el mismo eventoId reenviado con el MISMO cuerpo
+  1er envío -> HTTP 202
+  2do envío -> HTTP 202   ¿misma respuesta? True
+  Eventos guardados para ese viaje: 1
+
+>> Idempotencia: el mismo eventoId con OTRO cuerpo (otro origen)
+  Respuesta: HTTP 422
+{"type":"/errores/evento-id-reutilizado","title":"eventoId reutilizado con otro cuerpo","status":422,"detail":"El eventoId 8c068635-7ed0-4a44-b8ac-35356f01ef8b ya se registró con otro contenido. Un eventoId identifica un único evento: usá uno nuevo.","instance":"/api/v1/eventos"}
+
+==============================================================================
+  PARTE 2 - CQRS: la vista de lectura se actualiza DESPUÉS (consistencia eventual)
+==============================================================================
+viajeId = c7de1c13-051a-46d0-a128-dbd593f9d6aa
+
+>> Se envían los tres hitos (lado de ESCRITURA)
+  3 eventos aceptados (202).
+
+>> Inmediatamente: GET /api/v1/viajes/{id}/historial (lado de LECTURA, lee solo la vista)
+  t =  0.0 s -> items en la vista: 0  (la proyección todavía no llegó)
+  Proyección: eventosEnStore=24 proyectados=16 pendientes=8
+
+>> Se consulta cada 1 segundo hasta que aparezcan los 3 items
+  t =  1.0 s -> items en la vista: 0   pendientes de proyectar: 8
+  t =  2.0 s -> items en la vista: 0   pendientes de proyectar: 8
+  t =  3.1 s -> items en la vista: 2   pendientes de proyectar: 1
+  t =  4.1 s -> items en la vista: 3   pendientes de proyectar: 0
+
+>> Historial final (retrasoMs = proyectadoEn - registradoEn)
+
+version evento            descripcion                                    retrasoMs
+------- ------            -----------                                    ---------
+      1 ViajeSolicitado   Viaje solicitado (informado por M5)                 3073
+      2 ConductorAsignado Conductor b6a8c494 asignado (informado por M5)      3025
+      3 ViajeFinalizado   Viaje finalizado (informado por M6)                 3479
+
+
+
+Resumen según la vista:
+{
+    "estado":  "FINALIZADO",
+    "conductorId":  "b6a8c494-71ab-4173-8118-9f8d04c61567"
+}
+
+>> GET /api/v1/lab/proyeccion/estado
+{
+    "eventosEnStore":  24,
+    "eventosProyectados":  24,
+    "pendientes":  0,
+    "retrasoConfiguradoMs":  3000,
+    "ultimaProyeccionEn":  "2026-11-11T12:41:22.247708+00:00"
+}
+
+==============================================================================
+  PARTE 3 - RECONSTRUCCIÓN: la vista es descartable, la verdad son los eventos
+==============================================================================
+
+>> POST /api/v1/lab/proyeccion/reconstruir (borra la vista y reproduce todos los eventos)
+{
+    "eventosReproducidos":  24,
+    "reconstruidoEn":  "2026-11-11T12:41:22.8708504+00:00"
+}
+
+>> Se vuelve a consultar el historial del mismo viaje
+
+version evento            descripcion                                    retrasoMs
+------- ------            -----------                                    ---------
+      1 ViajeSolicitado   Viaje solicitado (informado por M5)                 4199
+      2 ConductorAsignado Conductor b6a8c494 asignado (informado por M5)      4151
+      3 ViajeFinalizado   Viaje finalizado (informado por M6)                 4103
+
+
+
+¿Mismo historial (versión, evento, descripción) que antes de reconstruir? True
+(retrasoMs cambia: es un dato de CUÁNDO se proyectó, no del viaje.)
+
+==============================================================================
+  FIN DE LA DEMO
+==============================================================================

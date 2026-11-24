@@ -1,0 +1,247 @@
+# Salida real de dotnet test - 2026-11-11 09:41:43 (hora local)
+# dotnet SDK 8.0.426 - rama feature/cqrs-es @ a5cae55
+
+########## Corrida 1: como en la CI (sin M8_TEST_POSTGRES: las 2 pruebas de PostgreSQL quedan omitidas)
+# Comando: dotnet test M8.Notificaciones.sln --logger "console;verbosity=normal"
+
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+  M8.Notificaciones.Api -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Se han encontrado conflictos entre distintas versiones de "Microsoft.EntityFrameworkCore.Relational" que no se han podido resolver. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Existía un conflicto entre "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Se eligió "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" porque era principal y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" no lo era. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen de "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" [C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll]. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen o se han unificado para "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" []. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+  M8.Notificaciones.Tests -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll
+Serie de pruebas para D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll (.NETCoreApp,Version=v8.0)
+Versión 17.11.1 (x64) de VSTest
+
+Iniciando la ejecución de pruebas, espere...
+1 archivos de prueba en total coincidieron con el patrón especificado.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.32)
+[xUnit.net 00:00:01.65]   Discovering: M8.Notificaciones.Tests
+[xUnit.net 00:00:01.69]   Discovered:  M8.Notificaciones.Tests
+[xUnit.net 00:00:01.69]   Starting:    M8.Notificaciones.Tests
+[xUnit.net 00:00:01.74]     M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.Con_comandos_simultaneos_sobre_el_mismo_viaje_gana_uno_solo [SKIP]
+[xUnit.net 00:00:01.74]       Definí M8_TEST_POSTGRES con una cadena de conexión a PostgreSQL para correr esta prueba.
+[xUnit.net 00:00:01.75]     M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.El_indice_unico_de_EventoId_rechaza_un_duplicado_aunque_se_saltee_el_chequeo [SKIP]
+[xUnit.net 00:00:01.75]       Definí M8_TEST_POSTGRES con una cadena de conexión a PostgreSQL para correr esta prueba.
+  Omitidas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.Con_comandos_simultaneos_sobre_el_mismo_viaje_gana_uno_solo [1 ms]
+  Omitidas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.El_indice_unico_de_EventoId_rechaza_un_duplicado_aunque_se_saltee_el_chequeo [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_solicita_otra_vez_Entonces_falla [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_finalizado_Cuando_se_asigna_Entonces_falla [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_tipo_desconocido_en_el_store_falla_con_un_mensaje_claro [9 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_asigna_conductor_Entonces_falla [5 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_finaliza_Entonces_falla [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_finaliza_sin_asignar_Entonces_falla [3 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_solicita_Entonces_genera_ViajeSolicitado [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_asignado_Cuando_se_finaliza_Entonces_genera_ViajeFinalizado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.Si_la_pasada_falla_el_proyector_registra_el_error_y_sigue_vivo [26 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Reproducir_los_tres_eventos_reconstruye_el_estado_completo [5 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_asigna_Entonces_genera_ConductorAsignado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_asignado_Cuando_se_asigna_otra_vez_Entonces_falla [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Aplicar_un_tipo_de_evento_desconocido_falla_en_vez_de_inventar_un_estado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Reproducir_una_lista_vacia_no_crea_ningun_viaje [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ViajeSolicitado { ViajeId = 1f08f5d2-9bd9-412e-af07-bceb0b7b6f4a, OcurridoEn = 11/11/2026 13:00:00 +00:00 }) [28 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ConductorAsignado { ViajeId = d981241d-9c93-4d71-81d5-773880672c2c, OcurridoEn = 11/11/2026 13:00:00 +00:00, ConductorId = bbe62a60-0bc0-49a5-824b-cacbaa26f466 }) [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ViajeFinalizado { ViajeId = 2e45672e-f79f-4757-a40e-feddbd4d6c91, OcurridoEn = 11/11/2026 13:00:00 +00:00 }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_evento_sin_nombre_registrado_no_se_puede_guardar [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Normalizar_fechas_pasa_a_UTC_y_trunca_a_microsegundos [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_payload_null_falla_con_un_mensaje_claro [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_ConLaOperacionCancelada_NoGuardaNada [370 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.CrearTicket_GuardaUnTicketAbiertoEnLaBase [376 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConLaOperacionCancelada_LanzaOperationCanceled [27 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.ObtenerTicketPorId_ConTicketInexistente_DevuelveNotFound [21 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.ObtenerTicketPorId_ConTicketExistente_DevuelveOkConSusDatos [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionFallida_DevuelveSusIntentosYSinFechaDeEnvio [8 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Push) [7 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Email) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Sms) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_el_mismo_cuerpo_no_duplica_y_devuelve_la_respuesta_original [417 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Notificacion_Nueva_TieneValoresPorDefecto [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_SinReferencia_GuardaLaReferenciaComoNull [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Notificacion_NuevasInstancias_TienenIdsDistintos [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = , Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 00000000-0000-0000-0000-000000000000, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 8e1fd5ca-3a61-4e4e-a0dd-6ca8cc6f0fc8, Tipo =  , Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = e22a7797-397a-456d-92e2-1e0d5cb6736d, Tipo = VIAJE_SOLICITADO, Origen = , OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = a42150d3-3b4d-48d5-bfc8-0e8874b264e3, Tipo = VIAJE_SOLICITADO, Origen = M99, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionInexistente_NoDevuelveDatosDeOtraNotificacion [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 3c59570f-b9a2-46ae-af3a-9b9b4036c63a, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = , ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 21ad671a-566c-4a43-bc3a-0d0921d84884, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = , Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 931faec3-eaa2-43f4-a4b6-20559c3fc3ad, Tipo = VIAJE_ASIGNADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 08ec38d9-9cd4-4ba2-8451-1da22a975062, Tipo = VIAJE_ASIGNADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 1fe181e7-6609-444b-9910-24f99c6701d2, Detalle = DetalleEventoRequest { ConductorId = 00000000-0000-0000-0000-000000000000 } }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionExistente_DevuelveOkConSusDatos [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_DevuelveLaNotificacionEnviadaYLaRutaParaConsultarla [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionInexistente_DevuelveNotFound [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaLaNotificacionEnLaBase [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Si_la_base_rechaza_el_insert_por_indice_unico_se_traduce_a_conflicto [7 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Registrar_los_tres_hitos_guarda_un_flujo_con_versiones_1_2_3 [6 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Finalizar_sin_asignar_lanza_regla_de_negocio_y_no_guarda_nada [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_otro_tipo_lanza_EventoIdReutilizado [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_de_un_asignado_con_el_mismo_cuerpo_tambien_es_idempotente [5 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Tipos_del_contrato_que_no_modelamos_lanzan_EventoNoSoportado(tipo: "VIAJE_CANCELADO") [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Tipos_del_contrato_que_no_modelamos_lanzan_EventoNoSoportado(tipo: "RESERVA_CREADA") [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.La_respuesta_trae_eventoId_viajeId_version_y_fechas_en_UTC [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Agregar_en_una_version_ya_ocupada_lanza_conflicto_de_concurrencia [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_otro_cuerpo_lanza_EventoIdReutilizado [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Pasado_el_retraso_proyecta_los_eventos_y_mide_el_retraso [493 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Lab_estado_y_reconstruir_devuelven_200 [494 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.EventoId_reutilizado_con_otro_cuerpo_devuelve_422_problem_json [3 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Cuerpo_invalido_devuelve_400_problem_json [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_estado_y_eventos_de_un_viaje_sin_eventos_devuelven_404 [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Post_eventos_valido_devuelve_202_con_la_version [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_eventos_devuelve_el_flujo_en_orden_con_el_payload_como_objeto [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.Una_pasada_del_proyector_respeta_el_retraso_usando_el_reloj_inyectado [491 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.No_proyecta_eventos_mas_nuevos_que_el_retraso_configurado [21 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_historial_despues_de_proyectar_muestra_los_items_y_el_resumen [10 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Volver_a_proyectar_no_duplica_filas [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_estado_reconstruye_el_viaje_reproduciendo_sus_eventos [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Post_eventos_repetido_devuelve_202_otra_vez_con_la_misma_respuesta [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Conflicto_de_concurrencia_devuelve_409_problem_json [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Finalizar_sin_asignar_devuelve_409_problem_json [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Tipo_no_soportado_devuelve_422_problem_json [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_historial_antes_de_proyectar_devuelve_200_con_items_vacio [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Reconstruir_la_vista_da_el_mismo_resultado_que_la_proyeccion_incremental [21 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Reconstruir_ignora_el_retraso_y_proyecta_tambien_los_eventos_recientes [2 ms]
+[xUnit.net 00:00:02.37]   Finished:    M8.Notificaciones.Tests
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Diagnostico_sin_eventos_ni_checkpoint_devuelve_ceros [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Proyecta_solo_los_eventos_viejos_y_deja_los_nuevos_para_despues [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Si_el_checkpoint_se_pierde_la_proyeccion_es_idempotente_y_saltea_filas_existentes [5 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.El_BackgroundService_proyecta_solo_mientras_la_app_esta_corriendo [121 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.AddViajesCqrsEs_registra_todas_las_piezas_y_lee_la_configuracion [1 ms]
+
+La serie de pruebas se ejecutó correctamente.
+Pruebas totales: 83
+     Correcto: 81
+    Omitido: 2
+ Tiempo total: 4.6030 Segundos
+
+Datos adjuntos:
+  D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\TestResults\9251ce8b-d74f-4b49-b8c0-5973a37dd735\coverage.cobertura.xml
+
+########## Corrida 2: con PostgreSQL real (contenedor m8-postgres del docker-compose, puerto 5433)
+# Comando: $env:M8_TEST_POSTGRES = "Host=localhost;Port=5433;Database=postgres;Username=<POSTGRES_USER>;Password=<oculto>"; dotnet test M8.Notificaciones.sln --logger "console;verbosity=normal"
+
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+  M8.Notificaciones.Api -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Se han encontrado conflictos entre distintas versiones de "Microsoft.EntityFrameworkCore.Relational" que no se han podido resolver. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277: Existía un conflicto entre "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Se eligió "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" porque era principal y "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" no lo era. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen de "Microsoft.EntityFrameworkCore.Relational, Version=8.0.4.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" [C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll]. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             C:\Users\Adonai\.nuget\packages\microsoft.entityframeworkcore.relational\8.0.4\lib\net8.0\Microsoft.EntityFrameworkCore.Relational.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:     Referencias que dependen o se han unificado para "Microsoft.EntityFrameworkCore.Relational, Version=8.0.8.0, Culture=neutral, PublicKeyToken=adb9793829ddae60" []. [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:         D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:           Atributos Include de elementos de archivo del proyecto que provocaron la referencia "D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll". [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+C:\Users\Adonai\.dotnet\sdk\8.0.426\Microsoft.Common.CurrentVersion.targets(2412,5): warning MSB3277:             D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\src\M8.Notificaciones.Api\bin\Debug\net8.0\M8.Notificaciones.Api.dll [D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\M8.Notificaciones.Tests.csproj]
+  M8.Notificaciones.Tests -> D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll
+Serie de pruebas para D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\bin\Debug\net8.0\M8.Notificaciones.Tests.dll (.NETCoreApp,Version=v8.0)
+Versión 17.11.1 (x64) de VSTest
+
+Iniciando la ejecución de pruebas, espere...
+1 archivos de prueba en total coincidieron con el patrón especificado.
+[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v2.8.2+699d445a1a (64-bit .NET 8.0.32)
+[xUnit.net 00:00:00.78]   Discovering: M8.Notificaciones.Tests
+[xUnit.net 00:00:00.82]   Discovered:  M8.Notificaciones.Tests
+[xUnit.net 00:00:00.82]   Starting:    M8.Notificaciones.Tests
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_solicita_otra_vez_Entonces_falla [6 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_tipo_desconocido_en_el_store_falla_con_un_mensaje_claro [10 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_finalizado_Cuando_se_asigna_Entonces_falla [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_asigna_conductor_Entonces_falla [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_finaliza_Entonces_falla [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_finaliza_sin_asignar_Entonces_falla [34 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_flujo_vacio_Cuando_se_solicita_Entonces_genera_ViajeSolicitado [9 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_asignado_Cuando_se_finaliza_Entonces_genera_ViajeFinalizado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Reproducir_los_tres_eventos_reconstruye_el_estado_completo [8 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_solicitado_Cuando_se_asigna_Entonces_genera_ConductorAsignado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Dado_un_viaje_asignado_Cuando_se_asigna_otra_vez_Entonces_falla [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Aplicar_un_tipo_de_evento_desconocido_falla_en_vez_de_inventar_un_estado [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajeAgregadoTests.Reproducir_una_lista_vacia_no_crea_ningun_viaje [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ViajeSolicitado { ViajeId = 780e475b-3683-4c44-9961-1bb7ba3c65e6, OcurridoEn = 11/11/2026 13:00:00 +00:00 }) [64 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.Si_la_pasada_falla_el_proyector_registra_el_error_y_sigue_vivo [79 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ConductorAsignado { ViajeId = 70b3cb94-df2e-4413-8a14-a513abafff53, OcurridoEn = 11/11/2026 13:00:00 +00:00, ConductorId = 45b5c752-f735-4e45-9d85-5e08cc4ee4f6 }) [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Serializar_y_deserializar_devuelve_el_mismo_evento(evento: ViajeFinalizado { ViajeId = c54f8a21-97f2-4f80-a1db-738ab42f453a, OcurridoEn = 11/11/2026 13:00:00 +00:00 }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_evento_sin_nombre_registrado_no_se_puede_guardar [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Normalizar_fechas_pasa_a_UTC_y_trunca_a_microsegundos [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.SerializadorEventosTests.Un_payload_null_falla_con_un_mensaje_claro [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_ConLaOperacionCancelada_NoGuardaNada [488 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.CrearTicket_GuardaUnTicketAbiertoEnLaBase [495 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.ObtenerTicketPorId_ConTicketInexistente_DevuelveNotFound [26 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConLaOperacionCancelada_LanzaOperationCanceled [33 ms]
+  Correctas M8.Notificaciones.Tests.SoporteControllerTests.ObtenerTicketPorId_ConTicketExistente_DevuelveOkConSusDatos [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionFallida_DevuelveSusIntentosYSinFechaDeEnvio [10 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Push) [6 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Email) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaElCanalIndicado(canal: Sms) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_el_mismo_cuerpo_no_duplica_y_devuelve_la_respuesta_original [541 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Notificacion_Nueva_TieneValoresPorDefecto [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_SinReferencia_GuardaLaReferenciaComoNull [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Notificacion_NuevasInstancias_TienenIdsDistintos [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionInexistente_NoDevuelveDatosDeOtraNotificacion [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = , Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 00000000-0000-0000-0000-000000000000, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 2e638079-21bf-414d-9a95-904fc4111da0, Tipo =  , Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 5d88ac16-a9e2-485f-b518-461d5b2db76a, Tipo = VIAJE_SOLICITADO, Origen = , OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 0a32c05f-8efd-4e83-a070-dd315545aeb7, Tipo = VIAJE_SOLICITADO, Origen = M99, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = 98c109c1-b948-46a7-9163-58c33d774aee, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = , ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = b60d32c7-760a-4dbf-98b9-960685ffce7d, Tipo = VIAJE_SOLICITADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = , Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = aed52452-dd86-4fff-9518-09d514f9a624, Tipo = VIAJE_ASIGNADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle =  }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Cuerpos_incompletos_o_invalidos_lanzan_SolicitudInvalida(request: EventoEntranteRequest { EventoId = cfb68b05-bbde-4cf3-b92c-a366e5f226e7, Tipo = VIAJE_ASIGNADO, Origen = M5, OcurridoEn = 11/11/2026 10:00:00 -03:00, ViajeId = 642ead5d-67cd-4601-b806-6c39e2191dad, Detalle = DetalleEventoRequest { ConductorId = 00000000-0000-0000-0000-000000000000 } }) [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionExistente_DevuelveOkConSusDatos [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_DevuelveLaNotificacionEnviadaYLaRutaParaConsultarla [1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.ObtenerPorId_ConNotificacionInexistente_DevuelveNotFound [< 1 ms]
+  Correctas M8.Notificaciones.Tests.NotificacionesControllerTests.Enviar_GuardaLaNotificacionEnLaBase [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Si_la_base_rechaza_el_insert_por_indice_unico_se_traduce_a_conflicto [7 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Registrar_los_tres_hitos_guarda_un_flujo_con_versiones_1_2_3 [7 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Finalizar_sin_asignar_lanza_regla_de_negocio_y_no_guarda_nada [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_otro_tipo_lanza_EventoIdReutilizado [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_de_un_asignado_con_el_mismo_cuerpo_tambien_es_idempotente [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Tipos_del_contrato_que_no_modelamos_lanzan_EventoNoSoportado(tipo: "VIAJE_CANCELADO") [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Tipos_del_contrato_que_no_modelamos_lanzan_EventoNoSoportado(tipo: "RESERVA_CREADA") [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.La_respuesta_trae_eventoId_viajeId_version_y_fechas_en_UTC [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Agregar_en_una_version_ya_ocupada_lanza_conflicto_de_concurrencia [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.RegistrarEventoViajeHandlerTests.Mismo_eventoId_con_otro_cuerpo_lanza_EventoIdReutilizado [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Pasado_el_retraso_proyecta_los_eventos_y_mide_el_retraso [619 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Lab_estado_y_reconstruir_devuelven_200 [620 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.EventoId_reutilizado_con_otro_cuerpo_devuelve_422_problem_json [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Cuerpo_invalido_devuelve_400_problem_json [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_estado_y_eventos_de_un_viaje_sin_eventos_devuelven_404 [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Post_eventos_valido_devuelve_202_con_la_version [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_eventos_devuelve_el_flujo_en_orden_con_el_payload_como_objeto [4 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.Una_pasada_del_proyector_respeta_el_retraso_usando_el_reloj_inyectado [565 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.No_proyecta_eventos_mas_nuevos_que_el_retraso_configurado [22 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_historial_despues_de_proyectar_muestra_los_items_y_el_resumen [9 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Volver_a_proyectar_no_duplica_filas [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_estado_reconstruye_el_viaje_reproduciendo_sus_eventos [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Post_eventos_repetido_devuelve_202_otra_vez_con_la_misma_respuesta [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Conflicto_de_concurrencia_devuelve_409_problem_json [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Finalizar_sin_asignar_devuelve_409_problem_json [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Tipo_no_soportado_devuelve_422_problem_json [< 1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ViajesControllersTests.Get_historial_antes_de_proyectar_devuelve_200_con_items_vacio [1 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Reconstruir_la_vista_da_el_mismo_resultado_que_la_proyeccion_incremental [17 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Reconstruir_ignora_el_retraso_y_proyecta_tambien_los_eventos_recientes [2 ms]
+[xUnit.net 00:00:02.38]   Finished:    M8.Notificaciones.Tests
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Diagnostico_sin_eventos_ni_checkpoint_devuelve_ceros [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Proyecta_solo_los_eventos_viejos_y_deja_los_nuevos_para_despues [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyeccionHistorialViajesTests.Si_el_checkpoint_se_pierde_la_proyeccion_es_idempotente_y_saltea_filas_existentes [5 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.El_BackgroundService_proyecta_solo_mientras_la_app_esta_corriendo [113 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.ProyectorYRegistroTests.AddViajesCqrsEs_registra_todas_las_piezas_y_lee_la_configuracion [2 ms]
+  Correctas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.Con_comandos_simultaneos_sobre_el_mismo_viaje_gana_uno_solo [1 s]
+  Correctas M8.Notificaciones.Tests.Viajes.PostgresIntegracionTests.El_indice_unico_de_EventoId_rechaza_un_duplicado_aunque_se_saltee_el_chequeo [259 ms]
+
+La serie de pruebas se ejecutó correctamente.
+Pruebas totales: 83
+     Correcto: 83
+ Tiempo total: 4.6465 Segundos
+
+Datos adjuntos:
+  D:\FACULTAD\ISI\3 AÑO\DESARROLLO DE SW\TPI_07\2026-07-TPI\2026-07-TPI\tests\M8.Notificaciones.Tests\TestResults\0511ee9a-af86-48c6-8e4d-76a0f657dede\coverage.cobertura.xml

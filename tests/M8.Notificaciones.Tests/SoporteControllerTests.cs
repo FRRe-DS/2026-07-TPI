@@ -1,68 +1,103 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging.Abstractions;
-using M8.Notificaciones.Api.Features.Soporte.Controllers;
-using M8.Notificaciones.Api.Features.Soporte.Dtos;
-using M8.Notificaciones.Api.Features.Soporte.Entities;
+using System.Net;
+using System.Net.Http.Json;
+using M8.Notificaciones.Tests.Notificaciones.Apoyo;
 
 namespace M8.Notificaciones.Tests;
 
 public class SoporteControllerTests
 {
-    [Fact]
-    public async Task CrearTicket_GuardaUnTicketAbiertoEnLaBase()
+    private const string Ruta = "/api/v1/tickets";
+    private static object Pedido(string tipo = "RESERVA") => new
     {
-        using var db = TestDb.Crear();
-        var controller = new SoporteController(db, NullLogger<SoporteController>.Instance);
-        var request = new CrearTicketRequest(
-            "usuario-1", "viaje-123", TipoIncidencia.Viaje, "El conductor no llegó", "Esperé 20 minutos");
+        referencia = new { tipo, id = Guid.NewGuid() }, titulo = "Cobro", descripcion = "Revisar el importe"
+    };
 
-        var resultado = await controller.CrearTicket(request, CancellationToken.None);
+    [Theory]
+    [InlineData("CLIENTE", "VIAJE")]
+    [InlineData("CONDUCTOR", "RESERVA")]
+    [InlineData("CLIENTE", "PAGO")]
+    public async Task Alta_transiciones_historial_y_repeticion_original(string rol, string tipo)
+    {
+        using var api = new ApiDePrueba();
+        using var titular = api.ClienteCon(rol);
+        using var operador = api.ClienteOperador();
+        var pedido = Pedido(tipo);
+        var alta = await titular.SendAsync(Json.Post(Ruta, pedido, "clave"));
+        Assert.Equal(HttpStatusCode.Created, alta.StatusCode);
+        var original = await alta.Content.ReadAsStringAsync();
+        var url = alta.Headers.Location!;
+        var ticket = await alta.LeerAsync();
+        Assert.Equal(rol, ticket.GetProperty("rol").GetString());
+        Assert.Equal(tipo, ticket.GetProperty("referencia").GetProperty("tipo").GetString());
 
-        var creado = Assert.IsType<CreatedAtActionResult>(resultado.Result);
-        var respuesta = Assert.IsType<TicketResponse>(creado.Value);
-        Assert.Equal(EstadoTicket.Abierto, respuesta.Estado);
-        var guardado = await db.Tickets.SingleAsync();
-        Assert.Equal(respuesta.Id, guardado.Id);
-        Assert.Equal("usuario-1", guardado.UsuarioId);
-        Assert.Equal("viaje-123", guardado.ViajeId);
-        Assert.Equal(TipoIncidencia.Viaje, guardado.Tipo);
-        Assert.Equal(EstadoTicket.Abierto, guardado.Estado);
-        Assert.Null(guardado.FechaCierre);
+        Assert.Equal(HttpStatusCode.Conflict, (await operador.PatchAsJsonAsync(url, new { estado = "CERRADO" })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await operador.PatchAsJsonAsync(url, new { estado = "EN_REVISION" })).StatusCode);
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await operador.PatchAsJsonAsync(url, new { estado = "RESUELTO" })).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await operador.PatchAsJsonAsync(url, new { estado = "RESUELTO", resolucion = "Corregido" })).StatusCode);
+        var reapertura = await operador.PatchAsJsonAsync(url, new { estado = "EN_REVISION", motivo = "Nueva evidencia" });
+        Assert.False((await reapertura.LeerAsync()).TryGetProperty("resolucion", out _));
+        await operador.PatchAsJsonAsync(url, new { estado = "RESUELTO", resolucion = "Confirmado" });
+        var cierre = await operador.PatchAsJsonAsync(url, new { estado = "CERRADO" });
+        Assert.True((await cierre.LeerAsync()).TryGetProperty("cerradoEn", out _));
+        var repetida = await titular.SendAsync(Json.Post(Ruta, pedido, "clave"));
+        Assert.Equal(HttpStatusCode.Created, repetida.StatusCode);
+        Assert.Equal(url, repetida.Headers.Location);
+        Assert.Equal(original, await repetida.Content.ReadAsStringAsync());
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, (await titular.SendAsync(Json.Post(Ruta, Pedido(), "clave"))).StatusCode);
+        var historial = await (await titular.GetAsync(url + "/historial?page=1&size=2")).LeerAsync();
+        Assert.Equal(6, historial.GetProperty("totalElementos").GetInt32());
+        Assert.Equal(3, historial.GetProperty("totalPaginas").GetInt32());
+        Assert.Equal("Nueva evidencia", historial.GetProperty("items")[1].GetProperty("motivo").GetString());
+        Assert.Equal("RESUELTO", historial.GetProperty("items")[1].GetProperty("estadoAnterior").GetString());
     }
 
     [Fact]
-    public async Task ObtenerTicketPorId_ConTicketExistente_DevuelveOkConSusDatos()
+    public async Task Aisla_titulares_y_aplica_filtros_y_permisos()
     {
-        using var db = TestDb.Crear();
-        var ticket = new Ticket
-        {
-            UsuarioId = "usuario-2",
-            Tipo = TipoIncidencia.Pago,
-            Titulo = "Cobro duplicado",
-            Descripcion = "Me cobraron dos veces"
-        };
-        db.Tickets.Add(ticket);
-        await db.SaveChangesAsync();
-        var controller = new SoporteController(db, NullLogger<SoporteController>.Instance);
+        using var api = new ApiDePrueba();
+        using var uno = api.ClienteCon("CLIENTE");
+        using var dos = api.ClienteCon("CONDUCTOR");
+        using var operador = api.ClienteOperador();
+        var pedido = Pedido("PAGO");
+        var alta = await uno.SendAsync(Json.Post(Ruta, pedido, "compartida"));
+        var ticket = await alta.LeerAsync();
+        var url = alta.Headers.Location!;
+        Assert.Equal(HttpStatusCode.Created, (await dos.SendAsync(Json.Post(Ruta, pedido, "compartida"))).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await dos.GetAsync(url)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await dos.GetAsync(url + "/historial")).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await uno.PatchAsJsonAsync(url, new { estado = "EN_REVISION" })).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await operador.SendAsync(Json.Post(Ruta, pedido, "otro"))).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await api.CreateClient().GetAsync(Ruta)).StatusCode);
+        Assert.Equal(HttpStatusCode.Forbidden, (await api.ClienteServicio().GetAsync(Ruta)).StatusCode);
 
-        var resultado = await controller.ObtenerTicketPorId(ticket.Id, CancellationToken.None);
-
-        var ok = Assert.IsType<OkObjectResult>(resultado.Result);
-        var respuesta = Assert.IsType<TicketResponse>(ok.Value);
-        Assert.Equal(ticket.Id, respuesta.Id);
-        Assert.Equal("Cobro duplicado", respuesta.Titulo);
-        Assert.Equal(TipoIncidencia.Pago, respuesta.Tipo);
+        var usuario = ticket.GetProperty("usuarioId").GetGuid();
+        var referencia = ticket.GetProperty("referencia").GetProperty("id").GetGuid();
+        var filtros = $"?usuarioId={usuario}&referenciaId={referencia}&referenciaTipo=PAGO&estado=ABIERTO";
+        Assert.Equal(HttpStatusCode.Forbidden, (await dos.GetAsync(Ruta + filtros)).StatusCode);
+        var lista = await (await operador.GetAsync(Ruta + filtros)).LeerAsync();
+        Assert.Equal(usuario, Assert.Single(lista.GetProperty("items").EnumerateArray()).GetProperty("usuarioId").GetGuid());
+        var propios = await (await dos.GetAsync(Ruta)).LeerAsync();
+        Assert.NotEqual(usuario, Assert.Single(propios.GetProperty("items").EnumerateArray()).GetProperty("usuarioId").GetGuid());
+        var ausente = await uno.GetAsync(Ruta + "/" + Guid.NewGuid());
+        Assert.Equal(HttpStatusCode.NotFound, ausente.StatusCode);
+        Assert.Equal("application/problem+json", ausente.Content.Headers.ContentType!.MediaType);
     }
 
     [Fact]
-    public async Task ObtenerTicketPorId_ConTicketInexistente_DevuelveNotFound()
+    public async Task Valida_clave_cuerpo_y_paginacion()
     {
-        using var db = TestDb.Crear();
-        var controller = new SoporteController(db, NullLogger<SoporteController>.Instance);
-
-        var resultado = await controller.ObtenerTicketPorId(Guid.NewGuid(), CancellationToken.None);
-
-        Assert.IsType<NotFoundObjectResult>(resultado.Result);
+        using var api = new ApiDePrueba();
+        using var cliente = api.ClienteCon("CLIENTE");
+        var referencia = new { tipo = "VIAJE", id = Guid.NewGuid() };
+        Assert.Equal(HttpStatusCode.BadRequest, (await cliente.PostAsJsonAsync(Ruta, Pedido())).StatusCode);
+        foreach (var pedido in new object[] {
+            new { referencia, titulo = "", descripcion = "texto" },
+            new { referencia, titulo = "titulo", descripcion = new string('a', 2001) },
+            new { referencia, titulo = "titulo", descripcion = "texto", usuarioId = Guid.NewGuid() },
+            new { referencia = new { tipo = "PAGO" }, titulo = "titulo", descripcion = "texto" },
+            Pedido("APP") })
+            Assert.Equal(HttpStatusCode.BadRequest, (await cliente.SendAsync(Json.Post(Ruta, pedido, "clave"))).StatusCode);
+        foreach (var query in new[] { "?page=-1", "?size=101", "?estado=Abierto", "?referenciaTipo=APP" })
+            Assert.Equal(HttpStatusCode.BadRequest, (await cliente.GetAsync(Ruta + query)).StatusCode);
     }
 }

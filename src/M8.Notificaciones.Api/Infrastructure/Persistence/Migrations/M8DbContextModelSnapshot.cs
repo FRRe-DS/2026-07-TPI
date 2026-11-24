@@ -75,6 +75,107 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                     b.ToTable("Comprobantes");
                 });
 
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Eventos.Entities.EventoRecibido", b =>
+                {
+                    b.Property<Guid>("EventoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("HashCuerpo")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("character varying(64)");
+
+                    b.Property<int>("NotificacionesGeneradas")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("character varying(5)");
+
+                    b.Property<DateTimeOffset>("RecibidoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("Via")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("EventoId");
+
+                    b.ToTable("EventosRecibidos", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.ContactoDestinatario", b =>
+                {
+                    b.Property<Guid>("UsuarioId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
+
+                    b.Property<string>("Telefono")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)");
+
+                    b.HasKey("UsuarioId");
+
+                    b.ToTable("ContactosDestinatarios", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.IntentoNotificacion", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Canal")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Error")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<Guid>("NotificacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Numero")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTimeOffset>("RealizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Resultado")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificacionId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("NotificacionIntentos", (string)null);
+                });
+
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.Notificacion", b =>
                 {
                     b.Property<Guid>("Id")
@@ -83,48 +184,130 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("Asunto")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)");
+
+                    b.Property<DateTimeOffset?>("BloqueadaHasta")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Canal")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
-                    b.Property<string>("Destinatario")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
+                    b.Property<string>("Contacto")
+                        .HasMaxLength(254)
+                        .HasColumnType("character varying(254)");
 
-                    b.Property<string>("ErrorUltimoIntento")
-                        .HasColumnType("text");
+                    b.Property<DateTimeOffset>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("DestinatarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("EnviadoEn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid?>("EventoId")
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("FechaEnvio")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<int>("Intentos")
+                        .HasColumnType("integer");
 
-                    b.Property<int>("IntentosReenvio")
+                    b.Property<int>("MaxIntentos")
                         .HasColumnType("integer");
 
                     b.Property<string>("Mensaje")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
 
-                    b.Property<string>("ReferenciaId")
-                        .HasColumnType("text");
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTimeOffset?>("ProximoIntentoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("ReferenciaId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ReferenciaTipo")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Rol")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("TipoEvento")
+                        .HasMaxLength(40)
+                        .HasColumnType("character varying(40)");
+
+                    b.Property<string>("UltimoError")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Destinatario");
+                    b.HasIndex("CreadoEn");
 
-                    b.HasIndex("Estado");
+                    b.HasIndex("DestinatarioId");
 
-                    b.ToTable("Notificaciones");
+                    b.HasIndex("ReferenciaId");
+
+                    b.HasIndex("Estado", "ProximoIntentoEn");
+
+                    b.HasIndex("EventoId", "DestinatarioId", "Rol")
+                        .IsUnique();
+
+                    b.ToTable("Notificaciones", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.CambioTicket", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ActorId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CambiadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("EstadoAnterior")
+                        .HasColumnType("text");
+
+                    b.Property<string>("EstadoNuevo")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Motivo")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("TicketId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TicketId", "Id");
+
+                    b.ToTable("HistorialTickets", (string)null);
                 });
 
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.Ticket", b =>
@@ -132,6 +315,19 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("CerradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ClaveIdempotencia")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Descripcion")
                         .IsRequired()
@@ -141,44 +337,170 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("FechaActualizacion")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<Guid>("ReferenciaId")
+                        .HasColumnType("uuid");
 
-                    b.Property<DateTime?>("FechaCierre")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("ReferenciaTipo")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("Resolucion")
                         .HasColumnType("text");
 
-                    b.Property<string>("Tipo")
+                    b.Property<string>("Rol")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<string>("Titulo")
                         .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
-                    b.Property<string>("UsuarioId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("ViajeId")
                         .HasColumnType("text");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Estado");
+                    b.HasIndex("CreadoEn");
 
-                    b.HasIndex("UsuarioId");
+                    b.HasIndex("ReferenciaTipo", "ReferenciaId");
 
-                    b.HasIndex("ViajeId");
+                    b.HasIndex("UsuarioId", "ClaveIdempotencia")
+                        .IsUnique()
+                        .HasDatabaseName("UX_TicketsSoporte_Usuario_Clave");
 
-                    b.ToTable("Tickets");
+                    b.ToTable("TicketsSoporte", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.EventStore.EventoAlmacenado", b =>
+                {
+                    b.Property<long>("Seq")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Seq"));
+
+                    b.Property<Guid>("EventoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
+
+                    b.Property<string>("Payload")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTimeOffset>("RegistradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("ViajeId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Seq");
+
+                    b.HasIndex("EventoId")
+                        .IsUnique();
+
+                    b.HasIndex("ViajeId", "Version")
+                        .IsUnique();
+
+                    b.ToTable("EventosViaje", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.Proyecciones.ProyeccionCheckpoint", b =>
+                {
+                    b.Property<string>("Nombre")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTimeOffset>("ActualizadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<long>("UltimaSeq")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Nombre");
+
+                    b.ToTable("ProyeccionCheckpoint", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Viajes.Proyecciones.ViajeHistorialItem", b =>
+                {
+                    b.Property<Guid>("ViajeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid?>("ConductorId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("character varying(250)");
+
+                    b.Property<string>("EstadoResultante")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Evento")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<DateTimeOffset>("OcurridoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("ProyectadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTimeOffset>("RegistradoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("ViajeId", "Version");
+
+                    b.ToTable("ViajesHistorialVista", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.IntentoNotificacion", b =>
+                {
+                    b.HasOne("M8.Notificaciones.Api.Features.Notificaciones.Entities.Notificacion", null)
+                        .WithMany("HistorialIntentos")
+                        .HasForeignKey("NotificacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Soporte.Entities.CambioTicket", b =>
+                {
+                    b.HasOne("M8.Notificaciones.Api.Features.Soporte.Entities.Ticket", null)
+                        .WithMany()
+                        .HasForeignKey("TicketId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.Notificacion", b =>
+                {
+                    b.Navigation("HistorialIntentos");
                 });
 #pragma warning restore 612, 618
         }
