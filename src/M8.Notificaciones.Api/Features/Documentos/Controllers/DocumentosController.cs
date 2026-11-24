@@ -1,13 +1,16 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using M8.Notificaciones.Api.Features.Documentos.Dtos;
 using M8.Notificaciones.Api.Features.Documentos.Services;
 using M8.Notificaciones.Api.Features.Documentos.Errors;
+using M8.Notificaciones.Api.Infrastructure.Seguridad;
 
 namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Tags("Documentos y QR (Célula 2)")]
+[Authorize]
 public class DocumentosController : ControllerBase
 {
     private readonly ILogger<DocumentosController> _logger;

@@ -30,4 +30,12 @@ public sealed record CambioTicketResponse(
     string EstadoNuevo, string ActorId, DateTime CambiadoEn,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Motivo);
 
+public sealed record MetricasSoporteResponse(
+    int TotalTickets,
+    int Abiertos,
+    int EnRevision,
+    int Resueltos,
+    int Cerrados,
+    double TiempoMedioResolucionMinutos);
+
 public sealed record Pagina<T>(int Page, int Size, int TotalElementos, int TotalPaginas, List<T> Items);

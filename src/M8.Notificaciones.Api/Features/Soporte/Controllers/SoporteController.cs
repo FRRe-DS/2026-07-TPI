@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
+using M8.Notificaciones.Api.Features.Notificaciones.Entities;
+using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Features.Soporte.Dtos;
 using M8.Notificaciones.Api.Features.Soporte.Entities;
 using M8.Notificaciones.Api.Infrastructure.Http;
@@ -15,7 +18,7 @@ namespace M8.Notificaciones.Api.Features.Soporte.Controllers;
 [Route("api/v1/tickets")]
 [Tags("Tickets")]
 [Authorize(Roles = Roles.Cliente + "," + Roles.Conductor + "," + Roles.Operador)]
-public sealed class SoporteController(M8DbContext db) : ControllerBase
+public sealed class SoporteController(M8DbContext db, FabricaNotificaciones fabricaNotificaciones) : ControllerBase
 {
     private bool EsOperador => User.IsInRole(Roles.Operador);
 
@@ -42,6 +45,10 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
         };
         db.Tickets.Add(ticket);
         RegistrarCambio(ticket, null, usuario.ToString(), null);
+
+        // Notificación de confirmación de recepción de ticket al usuario (TP3)
+        await NotificarRecepcionTicketAsync(ticket, ct);
+
         try
         {
             await db.SaveChangesAsync(ct);
@@ -138,6 +145,10 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
         if (ticket.Estado == "EN_REVISION") ticket.Resolucion = null;
         if (ticket.Estado == "CERRADO") ticket.CerradoEn = ticket.ActualizadoEn;
         RegistrarCambio(ticket, anterior, actor, cambio.Motivo);
+
+        // Notificación automática al usuario cuando su ticket cambia de estado (TP3 - Célula 1 y 3)
+        await NotificarCambioEstadoAsync(ticket, cambio.Estado, cambio.Resolucion, ct);
+
         try
         {
             await db.SaveChangesAsync(ct);
@@ -147,6 +158,111 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
             return Conflicto();
         }
         return Ok(Respuesta(ticket));
+    }
+
+    [HttpGet("metricas")]
+    [Authorize(Roles = Roles.Operador)]
+    public async Task<IActionResult> ObtenerMetricas(CancellationToken ct)
+    {
+        var total = await db.Tickets.CountAsync(ct);
+        var abiertos = await db.Tickets.CountAsync(t => t.Estado == "ABIERTO", ct);
+        var enRevision = await db.Tickets.CountAsync(t => t.Estado == "EN_REVISION", ct);
+        var resueltos = await db.Tickets.CountAsync(t => t.Estado == "RESUELTO", ct);
+        var cerrados = await db.Tickets.CountAsync(t => t.Estado == "CERRADO", ct);
+
+        var ticketsCerrados = await db.Tickets.AsNoTracking()
+            .Where(t => t.CerradoEn.HasValue)
+            .Select(t => new { t.CreadoEn, Cerrado = t.CerradoEn!.Value })
+            .ToListAsync(ct);
+
+        double tiempoMedioMinutos = 0;
+        if (ticketsCerrados.Count > 0)
+        {
+            tiempoMedioMinutos = ticketsCerrados
+                .Average(t => (t.Cerrado - t.CreadoEn).TotalMinutes);
+        }
+
+        return Ok(new MetricasSoporteResponse(
+            total,
+            abiertos,
+            enRevision,
+            resueltos,
+            cerrados,
+            Math.Round(tiempoMedioMinutos, 2)));
+    }
+
+    private async Task NotificarRecepcionTicketAsync(Ticket ticket, CancellationToken ct)
+    {
+        var rol = ticket.Rol == Roles.Cliente ? RolDestinatario.CLIENTE : RolDestinatario.CONDUCTOR;
+        var contacto = await db.ContactosDestinatarios.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.UsuarioId == ticket.UsuarioId, ct);
+
+        var asunto = $"Ticket #{ticket.Id.ToString()[..8]} recibido";
+        var mensaje = $"Recibimos tu ticket de soporte sobre {ticket.ReferenciaTipo} con título '{ticket.Titulo}'. Un operador lo revisará a la brevedad.";
+
+        var refTipo = ticket.ReferenciaTipo switch
+        {
+            "VIAJE" => TipoReferencia.VIAJE,
+            "RESERVA" => TipoReferencia.RESERVA,
+            "PAGO" => TipoReferencia.PAGO,
+            _ => (TipoReferencia?)null
+        };
+
+        var notificacion = fabricaNotificaciones.DeSoporte(
+            ticket.UsuarioId,
+            rol,
+            asunto,
+            mensaje,
+            refTipo,
+            ticket.ReferenciaId,
+            contacto,
+            DateTimeOffset.UtcNow);
+
+        db.Notificaciones.Add(notificacion);
+    }
+
+    private async Task NotificarCambioEstadoAsync(Ticket ticket, string nuevoEstado, string? resolucion, CancellationToken ct)
+    {
+        var rol = ticket.Rol == Roles.Cliente ? RolDestinatario.CLIENTE : RolDestinatario.CONDUCTOR;
+        var contacto = await db.ContactosDestinatarios.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.UsuarioId == ticket.UsuarioId, ct);
+
+        var asunto = nuevoEstado switch
+        {
+            "EN_REVISION" => $"Tu ticket #{ticket.Id.ToString()[..8]} está en revisión",
+            "RESUELTO" => $"Tu ticket #{ticket.Id.ToString()[..8]} fue resuelto",
+            "CERRADO" => $"Tu ticket #{ticket.Id.ToString()[..8]} fue cerrado",
+            _ => $"Actualización en tu ticket #{ticket.Id.ToString()[..8]}"
+        };
+
+        var detalleResolucion = string.IsNullOrWhiteSpace(resolucion) ? "" : $" Resolución: {resolucion}.";
+        var mensaje = nuevoEstado switch
+        {
+            "EN_REVISION" => $"Un operador tomó tu ticket sobre {ticket.ReferenciaTipo} y está analizando el caso.",
+            "RESUELTO" => $"El reclamo sobre {ticket.ReferenciaTipo} fue resuelto.{detalleResolucion}",
+            "CERRADO" => $"El ticket sobre {ticket.ReferenciaTipo} ha sido cerrado.",
+            _ => $"El estado de tu reclamo cambió a {nuevoEstado}."
+        };
+
+        var refTipo = ticket.ReferenciaTipo switch
+        {
+            "VIAJE" => TipoReferencia.VIAJE,
+            "RESERVA" => TipoReferencia.RESERVA,
+            "PAGO" => TipoReferencia.PAGO,
+            _ => (TipoReferencia?)null
+        };
+
+        var notificacion = fabricaNotificaciones.DeSoporte(
+            ticket.UsuarioId,
+            rol,
+            asunto,
+            mensaje,
+            refTipo,
+            ticket.ReferenciaId,
+            contacto,
+            DateTimeOffset.UtcNow);
+
+        db.Notificaciones.Add(notificacion);
     }
 
     private IActionResult Conflicto() => ProblemasHttp.Dominio(409, "/errores/transicion-invalida",

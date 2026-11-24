@@ -49,6 +49,10 @@ public class SoporteControllerTests
         Assert.Equal(3, historial.GetProperty("totalPaginas").GetInt32());
         Assert.Equal("Nueva evidencia", historial.GetProperty("items")[1].GetProperty("motivo").GetString());
         Assert.Equal("RESUELTO", historial.GetProperty("items")[1].GetProperty("estadoAnterior").GetString());
+
+        // Verificamos que los cambios de estado hayan generado notificaciones automáticas para el usuario
+        var notificaciones = await (await operador.GetAsync($"/api/v1/notificaciones?destinatarioId={ticket.GetProperty("usuarioId").GetGuid()}")).LeerAsync();
+        Assert.True(notificaciones.GetProperty("totalElementos").GetInt32() > 0);
     }
 
     [Fact]
@@ -99,5 +103,24 @@ public class SoporteControllerTests
             Assert.Equal(HttpStatusCode.BadRequest, (await cliente.SendAsync(Json.Post(Ruta, pedido, "clave"))).StatusCode);
         foreach (var query in new[] { "?page=-1", "?size=101", "?estado=Abierto", "?referenciaTipo=APP" })
             Assert.Equal(HttpStatusCode.BadRequest, (await cliente.GetAsync(Ruta + query)).StatusCode);
+    }
+
+    [Fact]
+    public async Task Operador_puede_consultar_metricas_operativas()
+    {
+        using var api = new ApiDePrueba();
+        using var cliente = api.ClienteCon("CLIENTE");
+        using var operador = api.ClienteOperador();
+
+        // Cliente no tiene permiso de ver métricas (RNF-12)
+        var noAutorizado = await cliente.GetAsync(Ruta + "/metricas");
+        Assert.Equal(HttpStatusCode.Forbidden, noAutorizado.StatusCode);
+
+        // Operador sí puede consultar métricas
+        var respuesta = await operador.GetAsync(Ruta + "/metricas");
+        Assert.Equal(HttpStatusCode.OK, respuesta.StatusCode);
+        var metricas = await respuesta.LeerAsync();
+        Assert.True(metricas.TryGetProperty("totalTickets", out _));
+        Assert.True(metricas.TryGetProperty("tiempoMedioResolucionMinutos", out _));
     }
 }
