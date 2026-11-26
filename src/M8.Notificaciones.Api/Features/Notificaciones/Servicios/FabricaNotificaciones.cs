@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using M8.Notificaciones.Api.Features.Eventos;
 using M8.Notificaciones.Api.Features.Eventos.Dtos;
 using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
@@ -13,6 +14,7 @@ public sealed class FabricaNotificaciones
 {
     private readonly OpcionesNotificaciones _opciones;
 
+    public FabricaNotificaciones(IOptions<OpcionesNotificaciones> opciones) => _opciones = opciones.Value;
     public FabricaNotificaciones(OpcionesNotificaciones opciones) => _opciones = opciones;
 
     /// <summary>
@@ -49,6 +51,19 @@ public sealed class FabricaNotificaciones
     {
         var eleccion = SelectorCanal.ParaCanal(canal, registrado?.Email, registrado?.Telefono);
         return Nueva(OrigenNotificacion.MANUAL, destinatarioId, rol, eleccion, asunto, mensaje, refTipo, refId, ahora, null, null);
+    }
+
+    /// <summary>Notificación automática generada por Soporte (cambio de estado de ticket).</summary>
+    public Notificacion DeSoporte(Guid destinatarioId, RolDestinatario rol, string asunto, string mensaje,
+        TipoReferencia? refTipo, Guid? refId, ContactoDestinatario? registrado, DateTimeOffset ahora)
+    {
+        var eleccion = SelectorCanal.Elegir(
+            null,
+            _opciones.CanalPorDefecto,
+            registrado?.Email,
+            registrado?.Telefono);
+
+        return Nueva(OrigenNotificacion.SOPORTE, destinatarioId, rol, eleccion, asunto, mensaje, refTipo, refId, ahora, null, null);
     }
 
     private Notificacion Nueva(OrigenNotificacion origen, Guid destinatarioId, RolDestinatario rol, SelectorCanal.Eleccion eleccion,

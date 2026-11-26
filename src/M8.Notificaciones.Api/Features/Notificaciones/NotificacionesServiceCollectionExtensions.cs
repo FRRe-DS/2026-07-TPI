@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using M8.Notificaciones.Api.Features.Eventos;
 using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
 using M8.Notificaciones.Api.Features.Notificaciones.Envio;
+using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Infrastructure.Idempotencia;
 using M8.Notificaciones.Api.Infrastructure.Mensajeria;
 
@@ -18,6 +19,7 @@ public static class NotificacionesServiceCollectionExtensions
         services.Configure<OpcionesRabbitMq>(configuration.GetSection(OpcionesRabbitMq.Seccion));
 
         // Ingesta de eventos (HTTP y RabbitMQ) y sus reacciones.
+        services.AddScoped<FabricaNotificaciones>();
         services.AddScoped<IngestaEventos>();
         services.AddScoped<IReaccionEvento, ReaccionHistorialViajes>();
 

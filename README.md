@@ -45,6 +45,8 @@ El módulo **M8 - Notificaciones, Documentos y Soporte** se encarga de:
 
 ---
 
+La [guía de Soporte y Tickets](docs/SOPORTE.md) explica la métrica de resolución y cómo verificar la entrega de los avisos en Mailpit.
+
 ## ▶️ Cómo levantar el módulo
 
 Requisitos: Docker y Docker Compose.

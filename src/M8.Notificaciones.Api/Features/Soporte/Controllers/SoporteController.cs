@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
+using M8.Notificaciones.Api.Features.Notificaciones.Entities;
+using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Features.Soporte.Dtos;
 using M8.Notificaciones.Api.Features.Soporte.Entities;
 using M8.Notificaciones.Api.Infrastructure.Http;
@@ -15,7 +18,7 @@ namespace M8.Notificaciones.Api.Features.Soporte.Controllers;
 [Route("api/v1/tickets")]
 [Tags("Tickets")]
 [Authorize(Roles = Roles.Cliente + "," + Roles.Conductor + "," + Roles.Operador)]
-public sealed class SoporteController(M8DbContext db) : ControllerBase
+public sealed class SoporteController(M8DbContext db, FabricaNotificaciones fabricaNotificaciones, TimeProvider reloj) : ControllerBase
 {
     private bool EsOperador => User.IsInRole(Roles.Operador);
 
@@ -30,7 +33,7 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
         var previo = await existentes.SingleOrDefaultAsync(ct);
         if (previo != null) return RepetirAlta(previo, pedido);
 
-        var ticks = DateTime.UtcNow.Ticks;
+        var ticks = reloj.GetUtcNow().UtcDateTime.Ticks;
         // PostgreSQL conserva microsegundos. El primer 201 y sus repeticiones deben coincidir.
         var ahora = new DateTime(ticks - ticks % 10, DateTimeKind.Utc);
         var ticket = new Ticket
@@ -42,6 +45,10 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
         };
         db.Tickets.Add(ticket);
         RegistrarCambio(ticket, null, usuario.ToString(), null);
+
+        // Notificación de confirmación de recepción de ticket al usuario (TP3)
+        await NotificarRecepcionTicketAsync(ticket, ct);
+
         try
         {
             await db.SaveChangesAsync(ct);
@@ -132,12 +139,16 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
 
         var anterior = ticket.Estado;
         ticket.Estado = cambio.Estado;
-        ticket.ActualizadoEn = DateTime.UtcNow;
+        ticket.ActualizadoEn = reloj.GetUtcNow().UtcDateTime;
         ticket.Version++;
         if (ticket.Estado == "RESUELTO") ticket.Resolucion = cambio.Resolucion;
         if (ticket.Estado == "EN_REVISION") ticket.Resolucion = null;
         if (ticket.Estado == "CERRADO") ticket.CerradoEn = ticket.ActualizadoEn;
         RegistrarCambio(ticket, anterior, actor, cambio.Motivo);
+
+        // Notificación automática al usuario cuando su ticket cambia de estado (TP3 - Célula 1 y 3)
+        await NotificarCambioEstadoAsync(ticket, cambio.Estado, cambio.Resolucion, ct);
+
         try
         {
             await db.SaveChangesAsync(ct);
@@ -147,6 +158,94 @@ public sealed class SoporteController(M8DbContext db) : ControllerBase
             return Conflicto();
         }
         return Ok(Respuesta(ticket));
+    }
+
+    [HttpGet("metricas")]
+    [Authorize(Roles = Roles.Operador)]
+    public async Task<IActionResult> ObtenerMetricas(CancellationToken ct)
+    {
+        var cantidades = await db.Tickets.GroupBy(t => t.Estado)
+            .Select(g => new { Estado = g.Key, Cantidad = g.Count() })
+            .ToDictionaryAsync(g => g.Estado, g => g.Cantidad, ct);
+
+        // Cada ticket pesa una vez, aunque el operador lo reabra y vuelva a resolverlo.
+        var primerasResoluciones = db.Set<CambioTicket>()
+            .Where(c => c.EstadoNuevo == "RESUELTO")
+            .GroupBy(c => c.TicketId)
+            .Select(g => new { TicketId = g.Key, Fecha = g.Min(c => c.CambiadoEn) });
+        var minutos = from r in primerasResoluciones
+                      join t in db.Tickets on r.TicketId equals t.Id
+                      select (double?)(r.Fecha - t.CreadoEn).TotalMinutes;
+        var promedio = await minutos.AverageAsync(ct) ?? 0;
+
+        return Ok(new MetricasSoporteResponse(
+            cantidades.Values.Sum(),
+            cantidades.GetValueOrDefault("ABIERTO"),
+            cantidades.GetValueOrDefault("EN_REVISION"),
+            cantidades.GetValueOrDefault("RESUELTO"),
+            cantidades.GetValueOrDefault("CERRADO"),
+            Math.Round(promedio, 2)));
+    }
+
+    private async Task NotificarRecepcionTicketAsync(Ticket ticket, CancellationToken ct)
+    {
+        var asunto = $"Ticket #{ticket.Id.ToString()[..8]} recibido";
+        var mensaje = $"Recibimos tu ticket de soporte sobre {ticket.ReferenciaTipo} con título '{ticket.Titulo}'. Un operador lo revisará a la brevedad.";
+
+        await AgregarAvisoAsync(ticket, asunto, mensaje, ct);
+    }
+
+    private async Task NotificarCambioEstadoAsync(Ticket ticket, string nuevoEstado, string? resolucion, CancellationToken ct)
+    {
+        var asunto = nuevoEstado switch
+        {
+            "EN_REVISION" => $"Tu ticket #{ticket.Id.ToString()[..8]} está en revisión",
+            "RESUELTO" => $"Tu ticket #{ticket.Id.ToString()[..8]} fue resuelto",
+            "CERRADO" => $"Tu ticket #{ticket.Id.ToString()[..8]} fue cerrado",
+            _ => $"Actualización en tu ticket #{ticket.Id.ToString()[..8]}"
+        };
+
+        var detalleResolucion = $" Resolución: {resolucion}";
+        var mensaje = nuevoEstado switch
+        {
+            "EN_REVISION" => $"Un operador tomó tu ticket sobre {ticket.ReferenciaTipo} y está analizando el caso.",
+            "RESUELTO" => $"El reclamo sobre {ticket.ReferenciaTipo} fue resuelto.{detalleResolucion}",
+            "CERRADO" => $"El ticket sobre {ticket.ReferenciaTipo} ha sido cerrado.",
+            _ => $"El estado de tu reclamo cambió a {nuevoEstado}."
+        };
+
+        // La resolución completa sigue disponible en el detalle protegido del ticket.
+        if (mensaje.Length > 1000)
+            mensaje = "Tu reclamo fue resuelto. Consultá la resolución completa en el ticket.";
+
+        await AgregarAvisoAsync(ticket, asunto, mensaje, ct);
+    }
+
+    private async Task AgregarAvisoAsync(Ticket ticket, string asunto, string mensaje, CancellationToken ct)
+    {
+        var rol = ticket.Rol == Roles.Cliente ? RolDestinatario.CLIENTE : RolDestinatario.CONDUCTOR;
+        var contacto = await db.ContactosDestinatarios.AsNoTracking()
+            .FirstOrDefaultAsync(c => c.UsuarioId == ticket.UsuarioId, ct);
+
+        var refTipo = ticket.ReferenciaTipo switch
+        {
+            "VIAJE" => TipoReferencia.VIAJE,
+            "RESERVA" => TipoReferencia.RESERVA,
+            "PAGO" => TipoReferencia.PAGO,
+            _ => (TipoReferencia?)null
+        };
+
+        var notificacion = fabricaNotificaciones.DeSoporte(
+            ticket.UsuarioId,
+            rol,
+            asunto,
+            mensaje,
+            refTipo,
+            ticket.ReferenciaId,
+            contacto,
+            reloj.GetUtcNow());
+
+        db.Notificaciones.Add(notificacion);
     }
 
     private IActionResult Conflicto() => ProblemasHttp.Dominio(409, "/errores/transicion-invalida",
