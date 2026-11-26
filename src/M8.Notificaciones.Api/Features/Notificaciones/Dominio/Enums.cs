@@ -58,4 +58,4 @@ public enum TipoEvento
 }
 
 /// <summary>De dónde salió la notificación (dato interno, no está en el contrato).</summary>
-public enum OrigenNotificacion { EVENTO, MANUAL, REENVIO }
+public enum OrigenNotificacion { EVENTO, MANUAL, REENVIO, SOPORTE }
