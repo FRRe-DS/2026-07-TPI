@@ -69,6 +69,10 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<string>("EmitidoPor")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<string>("HashCuerpo")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -101,6 +105,41 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                     b.HasKey("EventoId");
 
                     b.ToTable("EventosRecibidos", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.AuditoriaNotificacion", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Accion")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Actor")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<Guid>("NotificacionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("RealizadaEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequestId")
+                        .HasMaxLength(128)
+                        .HasColumnType("character varying(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NotificacionId");
+
+                    b.ToTable("NotificacionAuditoria", (string)null);
                 });
 
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.ContactoDestinatario", b =>
@@ -466,6 +505,15 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                     b.HasKey("ViajeId", "Version");
 
                     b.ToTable("ViajesHistorialVista", (string)null);
+                });
+
+            modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.AuditoriaNotificacion", b =>
+                {
+                    b.HasOne("M8.Notificaciones.Api.Features.Notificaciones.Entities.Notificacion", null)
+                        .WithMany()
+                        .HasForeignKey("NotificacionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("M8.Notificaciones.Api.Features.Notificaciones.Entities.IntentoNotificacion", b =>

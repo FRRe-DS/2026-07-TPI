@@ -180,7 +180,7 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
         {
             await using var scope = _scopes.CreateAsyncScope();
             var ingesta = scope.ServiceProvider.GetRequiredService<IngestaEventos>();
-            var resultado = await ingesta.ProcesarAsync(evento, Via, ct);
+            var resultado = await ingesta.ProcesarAsync(evento, Via, ct, entrega.BasicProperties.AppId);
 
             switch (resultado.Estado)
             {

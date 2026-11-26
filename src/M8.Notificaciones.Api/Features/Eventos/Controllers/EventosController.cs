@@ -34,7 +34,7 @@ public sealed class EventosController : ControllerBase
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status503ServiceUnavailable, ProblemasHttp.ContentType)]
     public async Task<IActionResult> Recibir([FromBody] EventoEntrada evento, CancellationToken ct)
     {
-        var resultado = await _ingesta.ProcesarAsync(evento, "HTTP", ct);
+        var resultado = await _ingesta.ProcesarAsync(evento, "HTTP", ct, User.Actor());
         return resultado.Estado switch
         {
             EstadoIngesta.Registrado or EstadoIngesta.Duplicado => Accepted(resultado.Respuesta),

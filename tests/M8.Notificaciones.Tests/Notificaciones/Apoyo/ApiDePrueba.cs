@@ -67,7 +67,11 @@ public class ApiDePrueba : WebApplicationFactory<Program>
             // PostgreSQL → EF InMemory (una base por instancia de la API).
             services.RemoveAll<DbContextOptions<M8DbContext>>();
             services.RemoveAll<M8DbContext>();
-            services.AddDbContext<M8DbContext>(o => o.UseInMemoryDatabase(_nombreBase, _raiz));
+            // Cada instancia de la API crea su propio proveedor interno de EF; pasadas las 20 en un
+            // mismo proceso EF lo trata como error (ManyServiceProvidersCreatedWarning) y la API responde 500.
+            // En producción hay una sola instancia, así que solo se silencia acá.
+            services.AddDbContext<M8DbContext>(o => o.UseInMemoryDatabase(_nombreBase, _raiz)
+                .ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.CoreEventId.ManyServiceProvidersCreatedWarning)));
 
             services.RemoveAll<IAlmacenIdempotencia>();
             services.AddSingleton<IAlmacenIdempotencia, AlmacenIdempotenciaEnMemoria>();

@@ -93,4 +93,16 @@ public sealed class FabricaNotificaciones
         if (ValidadorEvento.EsDeReserva(tipo)) return (TipoReferencia.RESERVA, e.ReservaId);
         return (TipoReferencia.VIAJE, e.ViajeId);
     }
+
+    /// <summary>
+    /// Reenvío de un comprobante (RF-8.5): al cliente, por el canal pedido y al
+    /// contacto registrado (el contrato prohíbe usar una dirección de la solicitud).
+    /// </summary>
+    public Notificacion Reenvio(Guid clienteId, Canal canal, string asunto, string mensaje,
+        TipoReferencia? refTipo, Guid? refId, ContactoDestinatario? registrado, DateTimeOffset ahora)
+    {
+        var eleccion = SelectorCanal.ParaCanal(canal, registrado?.Email, registrado?.Telefono);
+        return Nueva(OrigenNotificacion.REENVIO, clienteId, RolDestinatario.CLIENTE, eleccion, asunto, mensaje, refTipo, refId,
+            ahora, null, null);
+    }
 }

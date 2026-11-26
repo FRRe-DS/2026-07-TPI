@@ -75,6 +75,23 @@ public static class NotificacionesModelo
             e.Property(x => x.Origen).IsRequired().HasMaxLength(5);
             e.Property(x => x.HashCuerpo).IsRequired().HasMaxLength(64);
             e.Property(x => x.Via).IsRequired().HasMaxLength(10);
+            e.Property(x => x.EmitidoPor).HasMaxLength(100);
+        });
+
+        // TP3 (RNF-19): trazabilidad de operaciones manuales. Solo inserciones.
+        modelBuilder.Entity<AuditoriaNotificacion>(e =>
+        {
+            e.ToTable("NotificacionAuditoria");
+            e.HasKey(a => a.Id);
+            e.Property(a => a.Id).ValueGeneratedOnAdd();
+            e.Property(a => a.Accion).HasConversion<string>().HasMaxLength(20);
+            e.Property(a => a.Actor).IsRequired().HasMaxLength(100);
+            e.Property(a => a.RequestId).HasMaxLength(128);
+            e.HasIndex(a => a.NotificacionId);
+            e.HasOne<Notificacion>()
+                .WithMany()
+                .HasForeignKey(a => a.NotificacionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

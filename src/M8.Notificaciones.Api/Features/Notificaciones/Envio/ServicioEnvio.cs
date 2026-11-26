@@ -65,6 +65,8 @@ public sealed class ServicioEnvio
             ct.ThrowIfCancellationRequested();
             if (await TomarAsync(notificacion, ahora, ct))
             {
+                // Correlación por notificación y por viaje/reserva/pago en los logs del intento (RNF-14).
+                using var scopeLog = _logger.BeginScope(ScopeLog.DeNotificacion(notificacion));
                 using var span = Telemetria.Trazas.StartActivity("m8.notificaciones.intento");
                 try
                 {

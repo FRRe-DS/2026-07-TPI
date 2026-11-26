@@ -20,6 +20,13 @@ public class EventoRecibido
     /// <summary>Por dónde llegó: HTTP o RABBITMQ.</summary>
     public string Via { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Quién lo informó (RNF-19): el client del token si llegó por HTTP (por
+    /// ejemplo "grupo-05"), o el app_id del mensaje si llegó por RabbitMQ.
+    /// Null si no se pudo saber.
+    /// </summary>
+    public string? EmitidoPor { get; set; }
+
     public DateTimeOffset OcurridoEn { get; set; }
     public DateTimeOffset RecibidoEn { get; set; }
     public int NotificacionesGeneradas { get; set; }

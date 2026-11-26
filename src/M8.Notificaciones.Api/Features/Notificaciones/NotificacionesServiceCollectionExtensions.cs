@@ -39,6 +39,9 @@ public static class NotificacionesServiceCollectionExtensions
         services.AddSingleton<ConsumidorEventosRabbitMq>();
         services.AddHostedService(sp => sp.GetRequiredService<ConsumidorEventosRabbitMq>());
 
+        // TP3: punto de entrada para que Documentos pida el reenvío de un comprobante (RF-8.5).
+        services.AddScoped<Servicios.ReenviosNotificaciones>();
+
         return services;
     }
 

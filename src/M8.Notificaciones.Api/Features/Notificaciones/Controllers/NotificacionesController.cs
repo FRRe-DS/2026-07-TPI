@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
 using M8.Notificaciones.Api.Features.Notificaciones.Dtos;
+using M8.Notificaciones.Api.Features.Notificaciones.Entities;
 using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Infrastructure.Http;
 using M8.Notificaciones.Api.Infrastructure.Idempotencia;
@@ -101,6 +102,7 @@ public sealed class NotificacionesController : ControllerBase
 
             var fallidaAlCrearse = Telemetria.MarcarPrimeraFinalizacion(notificacion);
             _db.Notificaciones.Add(notificacion);
+            Auditar(notificacion.Id, AccionAuditoria.ALTA_MANUAL);
             await _db.SaveChangesAsync(ct);
             if (fallidaAlCrearse) Telemetria.NotificacionFinalizada(enviada: false, reintentada: false);
             _logger.LogInformation("Notificación manual {NotificacionId} registrada por {Actor} ({Estado})",
@@ -166,6 +168,8 @@ public sealed class NotificacionesController : ControllerBase
             n.ProximoIntentoEn = _reloj.Ahora();
             n.BloqueadaHasta = null;
             n.Version++;
+            // Mismo SaveChanges: si el reintento no se confirma, tampoco queda auditado.
+            Auditar(n.Id, AccionAuditoria.REINTENTO_MANUAL);
             try
             {
                 await _db.SaveChangesAsync(ct);
@@ -181,6 +185,17 @@ public sealed class NotificacionesController : ControllerBase
             return StatusCode(StatusCodes.Status202Accepted, NotificacionResponse.De(n));
         }, ct);
     }
+
+    /// <summary>Trazabilidad de la operación manual (RNF-19): quién, cuándo y con qué X-Request-Id.</summary>
+    private void Auditar(Guid notificacionId, AccionAuditoria accion) =>
+        _db.AuditoriaNotificaciones.Add(new AuditoriaNotificacion
+        {
+            NotificacionId = notificacionId,
+            Accion = accion,
+            Actor = User.Actor(),
+            RequestId = HttpContext.TraceIdentifier,
+            RealizadaEn = _reloj.Ahora()
+        });
 
     private ObjectResult NoEncontrada(Guid id) =>
         ProblemasHttp.Generico(StatusCodes.Status404NotFound, $"No existe la notificación {id}.", $"{Base}/{id}");

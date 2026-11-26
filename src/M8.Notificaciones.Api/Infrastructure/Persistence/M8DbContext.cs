@@ -21,6 +21,7 @@ public class M8DbContext : DbContext
     public DbSet<IntentoNotificacion> IntentosNotificacion => Set<IntentoNotificacion>();
     public DbSet<ContactoDestinatario> ContactosDestinatarios => Set<ContactoDestinatario>();
     public DbSet<EventoRecibido> EventosRecibidos => Set<EventoRecibido>();
+    public DbSet<AuditoriaNotificacion> AuditoriaNotificaciones => Set<AuditoriaNotificacion>();
 
     public DbSet<Comprobante> Comprobantes => Set<Comprobante>();
     public DbSet<Ticket> Tickets => Set<Ticket>();

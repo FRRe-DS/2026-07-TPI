@@ -79,7 +79,10 @@ public sealed class IngestaEventos
         _logger = logger;
     }
 
-    public async Task<ResultadoIngesta> ProcesarAsync(EventoEntrada? evento, string via, CancellationToken ct)
+    /// <param name="emitidoPor">Quién lo informó (client del token o app_id del mensaje), para auditoría.
+    /// No forma parte del hash: el mismo evento por HTTP y por la cola sigue siendo un duplicado.</param>
+    public async Task<ResultadoIngesta> ProcesarAsync(EventoEntrada? evento, string via, CancellationToken ct,
+        string? emitidoPor = null)
     {
         // 1. Validación.
         var errores = ValidadorEvento.Validar(evento);
@@ -90,6 +93,9 @@ public sealed class IngestaEventos
         var e = Normalizar(evento!);
         var eventoId = e.EventoId!.Value;
         var hash = HashIdempotencia.De(JsonSerializer.Serialize(e, JsonCanonico));
+
+        // Correlación por evento, viaje, reserva o pago en todos los logs de la ingesta (RNF-14).
+        using var scopeLog = _logger.BeginScope(ScopeLog.DeEvento(e));
 
         // 2. Idempotencia: ¿ya lo recibimos?
         var existente = await _db.EventosRecibidos.AsNoTracking().FirstOrDefaultAsync(x => x.EventoId == eventoId, ct);
@@ -113,6 +119,7 @@ public sealed class IngestaEventos
             Origen = e.Origen!.Value.ToString(),
             HashCuerpo = hash,
             Via = via,
+            EmitidoPor = Recortar(emitidoPor, 100),
             OcurridoEn = e.OcurridoEn!.Value,
             RecibidoEn = ahora,
             NotificacionesGeneradas = notificaciones.Count
@@ -214,6 +221,9 @@ public sealed class IngestaEventos
             }
         }
     }
+
+    private static string? Recortar(string? valor, int largo) =>
+        string.IsNullOrWhiteSpace(valor) ? null : valor.Length <= largo ? valor : valor[..largo];
 
     /// <summary>Fechas a UTC/microsegundos: así el hash no cambia por cómo vino escrita la fecha.</summary>
     private static EventoEntrada Normalizar(EventoEntrada e) => e with

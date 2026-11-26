@@ -112,6 +112,12 @@ app.UseExceptionHandler(errores => errores.Run(ProblemasHttp.ManejarExcepcion));
 app.UseStatusCodePages(ProblemasHttp.CompletarRespuestaSinCuerpo);
 // 4. Cuerpos de más de 1 MiB → 413.
 app.UseMiddleware<LimiteCuerpoMiddleware>();
+// 5. Encabezados de seguridad en toda respuesta (RNF-12, TP3) y HSTS fuera de Development.
+app.UseMiddleware<EncabezadosSeguridadMiddleware>();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+}
 
 if (app.Environment.IsDevelopment())
 {
