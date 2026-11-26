@@ -1,0 +1,134 @@
+{
+  "uid": "m8-observabilidad",
+  "title": "Módulo 8 — Observabilidad",
+  "timezone": "browser",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "30s",
+  "time": {"from": "now-30m", "to": "now"},
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Notificaciones aceptadas",
+      "description": "Aceptadas por el proveedor / notificaciones finalizadas durante el período. No equivale a entrega confirmada.",
+      "gridPos": {"x": 0, "y": 0, "w": 8, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "instant": true, "range": false,
+         "expr": "100 * (sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\",resultado=\"enviada\"}[$__range])) or (0 * sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\"}[$__range])))) / (sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\"}[$__range])) > 0)"}
+      ]
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Notificaciones con reintentos",
+      "description": "Finalizadas con más de un intento / todas las finalizadas (incluye éxitos y fallas). No cuenta intentos individuales.",
+      "gridPos": {"x": 8, "y": 0, "w": 8, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "instant": true, "range": false,
+         "expr": "100 * (sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\",reintentada=\"si\"}[$__range])) or (0 * sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\"}[$__range])))) / (sum(increase(m8_notificaciones_finalizadas_total{job=\"m8-api\"}[$__range])) > 0)"}
+      ]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "QR generados correctamente",
+      "description": "QR generados / solicitudes válidas de generación finalizadas durante el período.",
+      "gridPos": {"x": 16, "y": 0, "w": 8, "h": 4},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "instant": true, "range": false,
+         "expr": "100 * (sum(increase(m8_qr_finalizadas_total{job=\"m8-api\",resultado=\"generado\"}[$__range])) or (0 * sum(increase(m8_qr_finalizadas_total{job=\"m8-api\"}[$__range])))) / (sum(increase(m8_qr_finalizadas_total{job=\"m8-api\"}[$__range])) > 0)"}
+      ]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Solicitudes HTTP",
+      "description": "Incremento estimado del contador de solicitudes en el período seleccionado.",
+      "gridPos": {"x": 0, "y": 4, "w": 6, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"decimals": 0}, "overrides": []},
+      "targets": [
+        {"refId": "A", "instant": true, "range": false,
+         "expr": "sum(increase(http_server_request_duration_seconds_count{job=\"m8-api\"}[$__range]))"}
+      ]
+    },
+    {
+      "id": 5,
+      "type": "stat",
+      "title": "Errores HTTP (5xx)",
+      "description": "Solicitudes con estado 5xx / solicitudes totales durante el período. Los 4xx no cuentan como errores del servidor.",
+      "gridPos": {"x": 6, "y": 4, "w": 6, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "instant": true, "range": false,
+         "expr": "100 * (sum(increase(http_server_request_duration_seconds_count{job=\"m8-api\",http_response_status_code=~\"5..\"}[$__range])) or (0 * sum(increase(http_server_request_duration_seconds_count{job=\"m8-api\"}[$__range])))) / (sum(increase(http_server_request_duration_seconds_count{job=\"m8-api\"}[$__range])) > 0)"}
+      ]
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Latencia HTTP (p50, p95, p99)",
+      "gridPos": {"x": 12, "y": 4, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "s"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "legendFormat": "p50", "range": true, "interval": "60s", "expr": "histogram_quantile(0.50, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"m8-api\"}[$__rate_interval])))"},
+        {"refId": "B", "legendFormat": "p95", "range": true, "interval": "60s", "expr": "histogram_quantile(0.95, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"m8-api\"}[$__rate_interval])))"},
+        {"refId": "C", "legendFormat": "p99", "range": true, "interval": "60s", "expr": "histogram_quantile(0.99, sum by (le) (rate(http_server_request_duration_seconds_bucket{job=\"m8-api\"}[$__rate_interval])))"}
+      ]
+    },
+    {
+      "id": 7,
+      "type": "timeseries",
+      "title": "CPU por contenedor",
+      "gridPos": {"x": 0, "y": 12, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "percent"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "legendFormat": "{{service}} / {{container}}", "range": true, "expr": "m8_container_cpu_percent{job=\"m8-docker-sampler\"}"}
+      ]
+    },
+    {
+      "id": 8,
+      "type": "timeseries",
+      "title": "Memoria por contenedor",
+      "gridPos": {"x": 12, "y": 12, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "legendFormat": "{{service}} / {{container}}", "range": true, "expr": "m8_container_memory_bytes{job=\"m8-docker-sampler\"}"}
+      ]
+    },
+    {
+      "id": 9,
+      "type": "timeseries",
+      "title": "Red por contenedor (bytes acumulados)",
+      "gridPos": {"x": 0, "y": 20, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"unit": "bytes"}, "overrides": []},
+      "targets": [
+        {"refId": "A", "legendFormat": "{{service}} / {{container}} RX", "range": true, "expr": "m8_container_network_receive_bytes{job=\"m8-docker-sampler\"}"},
+        {"refId": "B", "legendFormat": "{{service}} / {{container}} TX", "range": true, "expr": "m8_container_network_transmit_bytes{job=\"m8-docker-sampler\"}"}
+      ]
+    },
+    {
+      "id": 10,
+      "type": "timeseries",
+      "title": "Estado por contenedor (1 = running, 0 = otro estado)",
+      "gridPos": {"x": 12, "y": 20, "w": 12, "h": 8},
+      "datasource": {"type": "prometheus", "uid": "prometheus"},
+      "fieldConfig": {"defaults": {"min": 0, "max": 1, "decimals": 0, "custom": {"lineInterpolation": "stepAfter"}}, "overrides": []},
+      "targets": [
+        {"refId": "A", "legendFormat": "{{service}} / {{container}}", "range": true, "expr": "m8_container_running{job=\"m8-docker-sampler\"}"}
+      ]
+    }
+  ]
+}

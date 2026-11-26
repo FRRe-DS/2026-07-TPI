@@ -1,4 +1,6 @@
+using System.Diagnostics;
 using System.Text.Json;
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
@@ -41,12 +43,15 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
     private readonly IServiceScopeFactory _scopes;
     private readonly OpcionesRabbitMq _opciones;
     private readonly ILogger<ConsumidorEventosRabbitMq> _logger;
+    private readonly Telemetria? _telemetria;
 
-    public ConsumidorEventosRabbitMq(IServiceScopeFactory scopes, IOptions<OpcionesRabbitMq> opciones, ILogger<ConsumidorEventosRabbitMq> logger)
+    public ConsumidorEventosRabbitMq(IServiceScopeFactory scopes, IOptions<OpcionesRabbitMq> opciones,
+        ILogger<ConsumidorEventosRabbitMq> logger, Telemetria? telemetria = null)
     {
         _scopes = scopes;
         _opciones = opciones.Value;
         _logger = logger;
+        _telemetria = telemetria;
     }
 
     /// <summary>true cuando la conexión y el consumidor están activos (lo usan los tests de integración).</summary>
@@ -147,6 +152,7 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
 
     private async Task ProcesarEntregaAsync(IChannel canal, BasicDeliverEventArgs entrega, CancellationToken ct)
     {
+        using var span = Telemetria.ContinuarRabbit(entrega.BasicProperties.Headers);
         var correlacion = entrega.BasicProperties.CorrelationId;
         var requestId = RequestIdMiddleware.EsValido(correlacion) ? correlacion! : RequestIdMiddleware.Generar();
 
@@ -161,9 +167,11 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
         {
             evento = JsonSerializer.Deserialize<EventoEntrada>(entrega.Body.Span, Json);
         }
-        catch (JsonException ex)
+        catch (JsonException)
         {
-            _logger.LogWarning("Mensaje descartado a la cola de errores: JSON inválido ({Error})", ex.Message);
+            span?.SetStatus(ActivityStatusCode.Error);
+            _telemetria?.Logs.LogWarning("RabbitMQ: JSON inválido");
+            _logger.LogWarning("Mensaje descartado a la cola de errores: JSON inválido");
             await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: false, ct);
             return;
         }
@@ -181,8 +189,9 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
                     await canal.BasicAckAsync(entrega.DeliveryTag, multiple: false, ct);
                     break;
                 default:
-                    _logger.LogWarning("Evento {EventoId} descartado a la cola de errores ({Estado}): {Errores}",
-                        evento?.EventoId, resultado.Estado, string.Join(" ", resultado.Errores ?? Array.Empty<string>()));
+                    span?.SetStatus(ActivityStatusCode.Error);
+                    _telemetria?.Logs.LogWarning("RabbitMQ: evento rechazado ({Estado})", resultado.Estado);
+                    _logger.LogWarning("Evento {EventoId} descartado a la cola de errores ({Estado})", evento?.EventoId, resultado.Estado);
                     await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: false, ct);
                     break;
             }
@@ -191,9 +200,11 @@ public sealed class ConsumidorEventosRabbitMq : BackgroundService
         {
             // Se está apagando la API: el mensaje sin confirmar vuelve a la cola solo.
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogWarning(ex, "Error transitorio procesando el evento {EventoId}; se reencola", evento?.EventoId);
+            span?.SetStatus(ActivityStatusCode.Error);
+            _telemetria?.Logs.LogWarning("RabbitMQ: error transitorio; se reencola");
+            _logger.LogWarning("Error transitorio procesando el evento {EventoId}; se reencola", evento?.EventoId);
             try { await Task.Delay(TimeSpan.FromSeconds(2), ct); } catch (OperationCanceledException) { }
             await canal.BasicNackAsync(entrega.DeliveryTag, multiple: false, requeue: true, CancellationToken.None);
         }

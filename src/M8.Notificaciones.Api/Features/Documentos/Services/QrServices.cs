@@ -1,8 +1,10 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using M8.Notificaciones.Api.Features.Documentos.Dtos; // pal qrResponse
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using QRCoder;
 using StackExchange.Redis;
 
@@ -33,64 +35,85 @@ public class QrService : IQrService
         DateTime? UsadoEn = null);
 
     private readonly IConnectionMultiplexer _redis;
+    private readonly Telemetria? _telemetria;
 
-    public QrService(IConnectionMultiplexer redis) => _redis = redis; // consttruct
+    public QrService(IConnectionMultiplexer redis, Telemetria? telemetria = null)
+    {
+        _redis = redis;
+        _telemetria = telemetria;
+    }
 
     public async Task<QrResponse> GenerarAsync(Guid viajeId, Guid clienteId, int validezSegundos)
     {
-        var db = _redis.GetDatabase();
-        var duracion = TimeSpan.FromSeconds(Math.Clamp(validezSegundos, 30, 3600));
-        var expiraEn = DateTime.UtcNow.Add(duracion);
-
-        var viajeKey = $"qr:viaje:{viajeId}";
-        var qrId = Guid.NewGuid();
-        var token = NuevoToken();
-        var hash = Hash(token);
-        var nuevo = new RegistroQr(qrId, viajeId, EstadoQr.Vigente, expiraEn);
-
-        // El anterior pasa a REEMPLAZADO y se crea el nuevo en una sola transaccion.
-        // Si otro request toca las mismas claves en el medio, se reintenta.
-        for (var intento = 0; intento < MaxIntentos; intento++)
+        using var span = Telemetria.Trazas.StartActivity("m8.qr.generar");
+        var etapa = "redis";
+        try
         {
-            var hashAnterior = await db.StringGetAsync(viajeKey);
-            var tran = db.CreateTransaction();
+            var db = _redis.GetDatabase();
+            var duracion = TimeSpan.FromSeconds(Math.Clamp(validezSegundos, 30, 3600));
+            var expiraEn = DateTime.UtcNow.Add(duracion);
 
-            if (hashAnterior.HasValue)
+            var viajeKey = $"qr:viaje:{viajeId}";
+            var qrId = Guid.NewGuid();
+            var token = NuevoToken();
+            var hash = Hash(token);
+            var nuevo = new RegistroQr(qrId, viajeId, EstadoQr.Vigente, expiraEn);
+
+            // El anterior pasa a REEMPLAZADO y se crea el nuevo en una sola transaccion.
+            // Si otro request toca las mismas claves en el medio, se reintenta.
+            for (var intento = 0; intento < MaxIntentos; intento++)
             {
-                tran.AddCondition(Condition.StringEqual(viajeKey, hashAnterior));
+                var hashAnterior = await db.StringGetAsync(viajeKey);
+                var tran = db.CreateTransaction();
 
-                var anteriorKey = $"qr:token:{hashAnterior}";
-                var jsonAnterior = await db.StringGetAsync(anteriorKey);
-                var anterior = jsonAnterior.HasValue ? Deserializar(jsonAnterior.ToString()) : null;
-
-                if (anterior is { Estado: EstadoQr.Vigente })
+                if (hashAnterior.HasValue)
                 {
-                    tran.AddCondition(Condition.StringEqual(anteriorKey, jsonAnterior));
-                    _ = tran.StringSetAsync(anteriorKey,
-                        Serializar(anterior with { Estado = EstadoQr.Reemplazado }), TtlRegistro);
+                    tran.AddCondition(Condition.StringEqual(viajeKey, hashAnterior));
+
+                    var anteriorKey = $"qr:token:{hashAnterior}";
+                    var jsonAnterior = await db.StringGetAsync(anteriorKey);
+                    var anterior = jsonAnterior.HasValue ? Deserializar(jsonAnterior.ToString()) : null;
+
+                    if (anterior is { Estado: EstadoQr.Vigente })
+                    {
+                        tran.AddCondition(Condition.StringEqual(anteriorKey, jsonAnterior));
+                        _ = tran.StringSetAsync(anteriorKey,
+                            Serializar(anterior with { Estado = EstadoQr.Reemplazado }), TtlRegistro);
+                    }
+                }
+                else
+                {
+                    tran.AddCondition(Condition.KeyNotExists(viajeKey));
+                }
+
+                _ = tran.StringSetAsync($"qr:token:{hash}", Serializar(nuevo), TtlRegistro);
+                _ = tran.StringSetAsync(viajeKey, hash, duracion);
+
+                if (await tran.ExecuteAsync())
+                {
+                    etapa = "imagen";
+                    var respuesta = new QrResponse(
+                        QrId: qrId,
+                        ViajeId: viajeId,
+                        Estado: "VIGENTE",
+                        Token: token,
+                        ImagenPng: "data:image/png;base64," + Convert.ToBase64String(GenerarPng(token)),
+                        ExpiraEn: expiraEn);
+                    Telemetria.QrFinalizado(true);
+                    return respuesta;
                 }
             }
-            else
-            {
-                tran.AddCondition(Condition.KeyNotExists(viajeKey));
-            }
 
-            _ = tran.StringSetAsync($"qr:token:{hash}", Serializar(nuevo), TtlRegistro);
-            _ = tran.StringSetAsync(viajeKey, hash, duracion);
-
-            if (await tran.ExecuteAsync())
-            {
-                return new QrResponse(
-                    QrId: qrId,
-                    ViajeId: viajeId,
-                    Estado: "VIGENTE",
-                    Token: token,
-                    ImagenPng: "data:image/png;base64," + Convert.ToBase64String(GenerarPng(token)),
-                    ExpiraEn: expiraEn);
-            }
+            throw new InvalidOperationException("No se pudo generar el QR por concurrencia, reintentar.");
         }
-
-        throw new InvalidOperationException("No se pudo generar el QR por concurrencia, reintentar.");
+        catch
+        {
+            span?.SetStatus(ActivityStatusCode.Error);
+            span?.SetTag("m8.etapa", etapa);
+            _telemetria?.Logs.LogWarning("QR: generación fallida en {Etapa}", etapa);
+            Telemetria.QrFinalizado(false);
+            throw;
+        }
     }
 
     public async Task<ResultadoValidacionQr> ConsumirAsync(string token, Guid viajeId)

@@ -7,6 +7,7 @@ using M8.Notificaciones.Api.Features.Notificaciones.Dtos;
 using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Infrastructure.Http;
 using M8.Notificaciones.Api.Infrastructure.Idempotencia;
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using M8.Notificaciones.Api.Infrastructure.Seguridad;
 using M8.Notificaciones.Api.Infrastructure.Tiempo;
@@ -98,8 +99,10 @@ public sealed class NotificacionesController : ControllerBase
                 solicitud.Asunto!, solicitud.Mensaje!, solicitud.Referencia?.Tipo, solicitud.Referencia?.Id,
                 contacto, _reloj.Ahora());
 
+            var fallidaAlCrearse = Telemetria.MarcarPrimeraFinalizacion(notificacion);
             _db.Notificaciones.Add(notificacion);
             await _db.SaveChangesAsync(ct);
+            if (fallidaAlCrearse) Telemetria.NotificacionFinalizada(enviada: false, reintentada: false);
             _logger.LogInformation("Notificación manual {NotificacionId} registrada por {Actor} ({Estado})",
                 notificacion.Id, User.Actor(), notificacion.Estado);
 

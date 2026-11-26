@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
 using M8.Notificaciones.Api.Features.Notificaciones.Entities;
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using M8.Notificaciones.Api.Infrastructure.Tiempo;
 
@@ -32,15 +34,17 @@ public sealed class ServicioEnvio
     private readonly IReadOnlyDictionary<Canal, IProveedorCanal> _proveedores;
     private readonly OpcionesEnvio _opciones;
     private readonly ILogger<ServicioEnvio> _logger;
+    private readonly Telemetria? _telemetria;
 
     public ServicioEnvio(M8DbContext db, IEnumerable<IProveedorCanal> proveedores, IOptions<OpcionesNotificaciones> opciones,
-        ILogger<ServicioEnvio> logger)
+        ILogger<ServicioEnvio> logger, Telemetria? telemetria = null)
     {
         _db = db;
         // Si hay más de un proveedor para un canal, gana el último registrado.
         _proveedores = proveedores.GroupBy(p => p.Canal).ToDictionary(g => g.Key, g => g.Last());
         _opciones = opciones.Value.Envio;
         _logger = logger;
+        _telemetria = telemetria;
     }
 
     /// <summary>Procesa un lote de notificaciones vencidas. Devuelve cuántos intentos hizo.</summary>
@@ -61,8 +65,18 @@ public sealed class ServicioEnvio
             ct.ThrowIfCancellationRequested();
             if (await TomarAsync(notificacion, ahora, ct))
             {
-                await IntentarAsync(notificacion, ahora, ct);
-                realizados++;
+                using var span = Telemetria.Trazas.StartActivity("m8.notificaciones.intento");
+                try
+                {
+                    await IntentarAsync(notificacion, ahora, span, ct);
+                    realizados++;
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    span?.SetStatus(ActivityStatusCode.Error);
+                    _telemetria?.Logs.LogError("Notificaciones: no se pudo persistir el intento");
+                    throw;
+                }
             }
         }
         return realizados;
@@ -85,10 +99,14 @@ public sealed class ServicioEnvio
         }
     }
 
-    private async Task IntentarAsync(Notificacion n, DateTimeOffset ahora, CancellationToken ct)
+    private async Task IntentarAsync(Notificacion n, DateTimeOffset ahora, Activity? span, CancellationToken ct)
     {
         var numero = n.Intentos + 1;
-        var resultado = await LlamarProveedorAsync(n, ct);
+        _proveedores.TryGetValue(n.Canal, out var proveedor);
+        var resultado = await LlamarProveedorAsync(n, proveedor, ct);
+        span?.SetTag("m8.proveedor", resultado.Simulado || proveedor is ProveedorSimulado ? "simulado"
+            : proveedor is ProveedorEmailSmtp ? "smtp" : proveedor is null ? "ninguno" : "otro");
+        span?.SetTag("m8.reintentada", numero > 1);
         var realizadoEn = Utc.Normalizar(ahora);
 
         _db.IntentosNotificacion.Add(new IntentoNotificacion
@@ -123,18 +141,27 @@ public sealed class ServicioEnvio
             n.UltimoError = resultado.Error;
         }
 
+        var primeraFinalizacion = Telemetria.MarcarPrimeraFinalizacion(n);
+        // El despachador no abre una transacción externa: SaveChanges confirma el
+        // estado y su intento de forma atómica, también ante concurrencia del lease.
         await _db.SaveChangesAsync(ct);
+        if (primeraFinalizacion) Telemetria.NotificacionFinalizada(resultado.Exito, numero > 1);
 
+        span?.SetTag("m8.resultado", resultado.Exito ? "aceptada" : n.Estado == EstadoNotificacion.FALLIDA ? "fallida" : "pendiente");
         if (resultado.Exito)
-            _logger.LogInformation("Notificación {NotificacionId} ENVIADA por {Canal} en el intento {Numero}", n.Id, n.Canal, numero);
+            _logger.LogInformation("Notificación {NotificacionId} aceptada por el proveedor {Canal} en el intento {Numero}", n.Id, n.Canal, numero);
         else
-            _logger.LogWarning("Notificación {NotificacionId}: intento {Numero}/{Max} por {Canal} falló ({Error}). Estado: {Estado}",
-                n.Id, numero, n.MaxIntentos, n.Canal, resultado.Error, n.Estado);
+        {
+            span?.SetStatus(ActivityStatusCode.Error);
+            _telemetria?.Logs.LogWarning("Notificaciones: intento fallido; estado {Estado}", n.Estado);
+            _logger.LogWarning("Notificación {NotificacionId}: intento {Numero}/{Max} por {Canal} falló. Estado: {Estado}",
+                n.Id, numero, n.MaxIntentos, n.Canal, n.Estado);
+        }
     }
 
-    private async Task<ResultadoEnvio> LlamarProveedorAsync(Notificacion n, CancellationToken ct)
+    private async Task<ResultadoEnvio> LlamarProveedorAsync(Notificacion n, IProveedorCanal? proveedor, CancellationToken ct)
     {
-        if (!_proveedores.TryGetValue(n.Canal, out var proveedor))
+        if (proveedor is null)
         {
             return ResultadoEnvio.Fallo($"No hay proveedor configurado para el canal {n.Canal}.");
         }
@@ -152,7 +179,7 @@ public sealed class ServicioEnvio
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            _logger.LogError(ex, "Error inesperado del proveedor {Canal} para la notificación {NotificacionId}", n.Canal, n.Id);
+            _logger.LogError("Error inesperado del proveedor {Canal} para la notificación {NotificacionId}", n.Canal, n.Id);
             return ResultadoEnvio.Fallo("Error inesperado del proveedor.");
         }
     }

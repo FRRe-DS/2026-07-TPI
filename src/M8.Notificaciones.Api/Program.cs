@@ -7,10 +7,12 @@ using M8.Notificaciones.Api.Features.Documentos.Services;
 using M8.Notificaciones.Api.Features.Notificaciones;
 using M8.Notificaciones.Api.Features.Viajes;
 using M8.Notificaciones.Api.Infrastructure.Http;
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using M8.Notificaciones.Api.Infrastructure.Salud;
 using M8.Notificaciones.Api.Infrastructure.Seguridad;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.AddObservabilidadM8();
 
 // Cuerpos de hasta 1 MiB (contrato de M8). LimiteCuerpoMiddleware da el 413 en problem+json.
 builder.WebHost.ConfigureKestrel(o => o.Limits.MaxRequestBodySize = LimiteCuerpoMiddleware.MaximoBytes);

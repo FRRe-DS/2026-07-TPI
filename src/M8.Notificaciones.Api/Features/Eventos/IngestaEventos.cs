@@ -7,6 +7,7 @@ using M8.Notificaciones.Api.Features.Notificaciones;
 using M8.Notificaciones.Api.Features.Notificaciones.Entities;
 using M8.Notificaciones.Api.Features.Notificaciones.Servicios;
 using M8.Notificaciones.Api.Infrastructure.Idempotencia;
+using M8.Notificaciones.Api.Infrastructure.Observability;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using M8.Notificaciones.Api.Infrastructure.Tiempo;
 
@@ -116,6 +117,7 @@ public sealed class IngestaEventos
             RecibidoEn = ahora,
             NotificacionesGeneradas = notificaciones.Count
         };
+        var fallidasAlCrearse = notificaciones.Count(Telemetria.MarcarPrimeraFinalizacion);
         _db.EventosRecibidos.Add(registro);
         _db.Notificaciones.AddRange(notificaciones);
 
@@ -133,6 +135,10 @@ public sealed class IngestaEventos
             if (ganador is null) throw;
             return CompararConExistente(ganador, hash, via);
         }
+
+        // Solo el ganador de la escritura del evento y sus avisos aporta al contador.
+        for (var i = 0; i < fallidasAlCrearse; i++)
+            Telemetria.NotificacionFinalizada(enviada: false, reintentada: false);
 
         _logger.LogInformation(
             "Evento {EventoId} {Tipo} de {Origen} recibido por {Via}: {Cantidad} notificaciones creadas",

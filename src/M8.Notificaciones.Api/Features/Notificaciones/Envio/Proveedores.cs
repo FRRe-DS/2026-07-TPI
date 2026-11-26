@@ -9,10 +9,10 @@ namespace M8.Notificaciones.Api.Features.Notificaciones.Envio;
 public sealed record MensajeSaliente(Guid NotificacionId, Guid DestinatarioId, Canal Canal, string? Contacto, string Asunto, string Mensaje);
 
 /// <summary>Resultado de un intento. El error nunca incluye datos personales (va a la base y a la API).</summary>
-public sealed record ResultadoEnvio(bool Exito, string? Error = null)
+public sealed record ResultadoEnvio(bool Exito, string? Error = null, bool Simulado = false)
 {
     public static readonly ResultadoEnvio Ok = new(true);
-    public static ResultadoEnvio Fallo(string error) => new(false, error);
+    public static ResultadoEnvio Fallo(string error, bool simulado = false) => new(false, error, simulado);
 }
 
 /// <summary>Un canal de salida (servicio externo de mensajería, real o simulado).</summary>
@@ -66,8 +66,7 @@ public sealed class ProveedorSimulado : IProveedorCanal
         {
             return Task.FromResult(ResultadoEnvio.Fallo(falla));
         }
-        _logger.LogInformation("[{Canal} simulado] Notificación {NotificacionId} entregada al usuario {DestinatarioId}",
-            Canal, m.NotificacionId, m.DestinatarioId);
+        _logger.LogInformation("[{Canal} simulado] Notificación {NotificacionId} aceptada en simulación", Canal, m.NotificacionId);
         return Task.FromResult(ResultadoEnvio.Ok);
     }
 }
@@ -93,7 +92,7 @@ public sealed class ProveedorEmailSmtp : IProveedorCanal
         var falla = SimulacionFallas.Evaluar(m, _opciones.Simulacion);
         if (falla is not null)
         {
-            return ResultadoEnvio.Fallo(falla);
+            return ResultadoEnvio.Fallo(falla, simulado: true);
         }
 
         var smtp = _opciones.Smtp;

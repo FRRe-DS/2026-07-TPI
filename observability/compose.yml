@@ -1,0 +1,16 @@
+name: m8-observability
+
+services:
+  lgtm:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:${M8_OBS_GRAFANA_PORT:-3000}:3000"
+      - "127.0.0.1:${M8_OBS_OTLP_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${M8_OBS_OTLP_HTTP_PORT:-4318}:4318"
+    networks:
+      - observability
+
+networks:
+  observability:
+    name: m8-observability
