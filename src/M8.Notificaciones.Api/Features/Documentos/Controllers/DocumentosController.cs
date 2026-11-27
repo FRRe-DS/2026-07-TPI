@@ -13,7 +13,7 @@ namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Tags("Documentos y QR (Célula 2)")]
-[Authorize(Roles = Roles.Cliente + "," + Roles.Operador)]
+[Authorize]
 public class DocumentosController : ControllerBase
 {
     private readonly ILogger<DocumentosController> _logger;
