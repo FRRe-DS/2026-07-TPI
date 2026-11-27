@@ -4,12 +4,16 @@ using M8.Notificaciones.Api.Features.Documentos.Services;
 using Microsoft.EntityFrameworkCore;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
 using M8.Notificaciones.Api.Features.Documentos.Errors;
+using Microsoft.AspNetCore.Authorization;
+using M8.Notificaciones.Api.Infrastructure.Seguridad;
+using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
 
 namespace M8.Notificaciones.Api.Features.Documentos.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
 [Tags("Documentos y QR (Célula 2)")]
+[Authorize(Roles = Roles.Cliente + "," + Roles.Operador)]
 public class DocumentosController : ControllerBase
 {
     private readonly ILogger<DocumentosController> _logger;
@@ -129,12 +133,19 @@ public class DocumentosController : ControllerBase
     }
 
     [HttpGet("~/api/v1/comprobantes")]
+    [Authorize(Roles = Roles.Cliente + "," + Roles.Operador)]
     public async Task<ActionResult<PaginaComprobantesResponse>> ListarComprobantes(
-        Guid? viajeId,
-        Guid? clienteId,
-        int pagina = 1,
-        int tamano = 20)
+        [FromQuery] Guid? viajeId,
+        [FromQuery] Guid? clienteId,
+        [FromQuery] int page = 0,
+        [FromQuery] int size = 20)
     {
+        if (page < 0 || size is < 1 or > 100)
+        {
+            return BadRequest(Problemas.SolicitudInvalida(
+                "'page' debe ser 0 o mayor y 'size' estar entre 1 y 100."));
+        }
+
         var consulta = _db.Comprobantes.AsQueryable();
 
         if (viajeId.HasValue)
@@ -143,12 +154,12 @@ public class DocumentosController : ControllerBase
         if (clienteId.HasValue)
             consulta = consulta.Where(c => c.ClienteId == clienteId.Value);
 
-        var total = await consulta.CountAsync();
+        var totalElementos = await consulta.CountAsync();
 
         var comprobantes = await consulta
             .OrderByDescending(c => c.CreadoEn)
-            .Skip((pagina - 1) * tamano)
-            .Take(tamano)
+            .Skip(page * size)
+            .Take(size)
             .ToListAsync();
 
         var items = comprobantes.Select(c => new ComprobanteResponse(
@@ -161,13 +172,18 @@ public class DocumentosController : ControllerBase
             new ImporteResponse(c.MontoTotal, c.Moneda),
             c.EmitidoEn,
             c.UrlPdf,
-            c.CreadoEn));
+            c.CreadoEn)).ToList();
+
+        var totalPaginas = totalElementos == 0
+            ? 0
+            : (int)Math.Ceiling(totalElementos / (double)size);
 
         return Ok(new PaginaComprobantesResponse(
-            items.ToList(),
-            pagina,
-            tamano,
-            total));
+            items,
+            page,
+            size,
+            totalElementos,
+            totalPaginas));
     }
 
     [HttpGet("~/api/v1/comprobantes/{comprobanteId:guid}")]
@@ -198,11 +214,42 @@ public class DocumentosController : ControllerBase
     /// <summary>
     /// Reenvía el comprobante por correo electrónico (RF-8.5)
     /// </summary>
-    [HttpPost("comprobantes/{viajeId}/reenviar")]
-    public IActionResult ReenviarComprobante(string viajeId, [FromBody] ReenviarComprobanteRequest request)
+    [HttpPost("~/api/v1/comprobantes/{comprobanteId:guid}/reenvios")]
+    [Authorize(Roles = Roles.Cliente + "," + Roles.Operador)]
+    public async Task<IActionResult> ReenviarComprobante(
+        Guid comprobanteId,
+        [FromBody] ReenviarComprobanteRequest request)
     {
-        _logger.LogInformation("Reenviando comprobante del viaje {ViajeId} a {Email}", viajeId, request.EmailDestino);
+        if (request.Canal is null)
+        {
+            return BadRequest(Problemas.SolicitudInvalida(
+                "El campo 'canal' es obligatorio."));
+        }
 
-        return Accepted(new { Mensaje = $"Comprobante del viaje {viajeId} encolado para reenvío a {request.EmailDestino}" });
+        var comprobante = await _db.Comprobantes
+            .AsNoTracking()
+            .SingleOrDefaultAsync(c => c.Id == comprobanteId);
+
+        if (comprobante is null)
+            return NotFound(Problemas.NoEncontrado("El comprobante no existe."));
+
+        if (comprobante.Estado != "GENERADO")
+        {
+            return Problemas.Crear(
+                StatusCodes.Status409Conflict,
+                "/errores/comprobante-no-generado",
+                "El comprobante todavía no está generado",
+                "El comprobante debe estar en estado GENERADO antes de reenviarlo.");
+        }
+
+        _logger.LogInformation(
+            "Reenvío solicitado para el comprobante {ComprobanteId} por canal {Canal}",
+            comprobanteId,
+            request.Canal);
+
+        return Accepted(new
+        {
+            Mensaje = $"Reenvío del comprobante {comprobanteId} encolado por {request.Canal}"
+        });
     }
 }
