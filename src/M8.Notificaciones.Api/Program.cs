@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using QuestPDF.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using M8.Notificaciones.Api.Infrastructure.Persistence;
@@ -10,6 +11,8 @@ using M8.Notificaciones.Api.Infrastructure.Http;
 using M8.Notificaciones.Api.Infrastructure.Observability;
 using M8.Notificaciones.Api.Infrastructure.Salud;
 using M8.Notificaciones.Api.Infrastructure.Seguridad;
+
+QuestPDF.Settings.License = LicenseType.Community;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddObservabilidadM8();
@@ -67,6 +70,11 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
 });
 // Servicio del QR (Célula 2).
 builder.Services.AddSingleton<IQrService, QrService>();
+
+//Registrar el servicio del pdf
+builder.Services.AddScoped<IComprobantePdfService, ComprobantePdfService>();
+
+builder.Services.AddScoped<IComprobanteService, ComprobanteService>();
 
 // Viajes: CQRS + Event Sourcing (event store, handler, consultas y proyector en segundo plano).
 builder.Services.AddViajesCqrsEs(builder.Configuration);

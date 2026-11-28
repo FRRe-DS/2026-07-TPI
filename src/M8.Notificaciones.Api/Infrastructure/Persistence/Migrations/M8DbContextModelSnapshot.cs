@@ -28,16 +28,23 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("ClienteId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid>("ClienteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreadoEn")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("EmitidoEn")
+                        .HasColumnType("timestamp with time zone");
 
                     b.Property<bool>("EnviadoPorEmail")
                         .HasColumnType("boolean");
 
-                    b.Property<DateTime>("FechaEmision")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("text")
+                        .HasDefaultValue("PENDIENTE");
 
                     b.Property<string>("Moneda")
                         .IsRequired()
@@ -48,13 +55,18 @@ namespace M8.Notificaciones.Api.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("numeric(18,2)");
 
-                    b.Property<string>("RutaArchivoPdf")
+                    b.Property<string>("Motivo")
+                        .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("ViajeId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                    b.Property<Guid?>("PagoId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("UrlPdf")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("ViajeId")
+                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 

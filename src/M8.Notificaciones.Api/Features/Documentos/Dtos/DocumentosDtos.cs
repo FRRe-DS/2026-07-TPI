@@ -1,5 +1,6 @@
 namespace M8.Notificaciones.Api.Features.Documentos.Dtos;
 using System.ComponentModel.DataAnnotations;
+using M8.Notificaciones.Api.Features.Notificaciones.Dominio;
 
 public record GenerarQrRequest( // viajeid en el endpoint
     Guid ClienteId,
@@ -14,17 +15,36 @@ public record QrResponse(
     DateTime ExpiraEn
 );
 
+
+
 public record ReenviarComprobanteRequest(
-    string EmailDestino
+    Canal? Canal
+);
+
+public record ImporteResponse(
+    decimal Monto,
+    string Moneda
 );
 
 public record ComprobanteResponse(
-    string ComprobanteId,
-    string ViajeId,
-    DateTime FechaEmision,
-    decimal MontoTotal,
-    string Moneda,
-    string UrlDescargaPdf
+    Guid ComprobanteId,
+    Guid ViajeId,
+    Guid ClienteId,
+    Guid? PagoId,
+    string Motivo,
+    string Estado,
+    ImporteResponse Importe,
+    DateTime? EmitidoEn,
+    string? UrlPdf,
+    DateTime CreadoEn
+);
+
+public record PaginaComprobantesResponse(
+    IReadOnlyCollection<ComprobanteResponse> Items,
+    int Page,
+    int Size,
+    int TotalElementos,
+    int TotalPaginas
 );
 
 //añado el viajeId
